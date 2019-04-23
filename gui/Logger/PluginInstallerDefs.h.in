@@ -1,0 +1,48 @@
+/****************************************************************************
+ * Copyright (c) 2019 Tomi Lähteenmäki <lihis@lihis.net>                    *
+ *                                                                          *
+ * This program is free software; you can redistribute it and/or modify     *
+ * it under the terms of the GNU General Public License as published by     *
+ * the Free Software Foundation; either version 2 of the License, or        *
+ * (at your option) any later version.                                      *
+ *                                                                          *
+ * This program is distributed in the hope that it will be useful,          *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
+ * GNU General Public License for more details.                             *
+ *                                                                          *
+ * You should have received a copy of the GNU General Public License        *
+ * along with this program; if not, write to the Free Software              *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,               *
+ * MA 02110-1301, USA.                                                      *
+ ****************************************************************************/
+
+/**
+ * @file PluginInstallerDefs.h
+ * @brief Wrapper to get path for plugins shipped with program
+ * @author Tomi Lähteenmäki
+ * @license This project is licensed under GNU General Public License, Version 2
+ */
+
+#ifndef ETS2_JOB_LOGGER_PLUGININSTALLERDEFS_H
+#define ETS2_JOB_LOGGER_PLUGININSTALLERDEFS_H
+
+#include <wx/string.h>
+#ifdef _WIN32
+#include <wx/stdpaths.h>
+#endif
+
+/**
+ * Get path to directory where installable plugins files are stored
+ *
+ * @return
+ */
+wxString get_local_plugin_path() {
+#ifdef _WIN32
+    return wxPathOnly(wxStandardPaths::Get().GetExecutablePath());
+#else
+    return "@PLUGIN_INSTALL_PATH@";
+#endif
+}
+
+#endif //ETS2_JOB_LOGGER_PLUGININSTALLERDEFS_H
