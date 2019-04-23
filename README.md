@@ -11,6 +11,10 @@ sends a POST request to the specified API URL when a new job is taken or a
 current job is delivered. See `JSON Format` paragraph for details of the format
 sent to your API endpoint.
 
+Applications stores job information in memory until it's sent to your API. If
+sending failed, eg. your API did not return expected HTTP code, applications
+tries to send it again later until it's sent successfully.
+
 ## JSON Format
 
 Below is an example of JSON format sent to API when user takes a job or when
@@ -31,6 +35,11 @@ user finishes the job.
     "destinationCompany": "Container Port"
 }
 ```
+
+**API:**
+
+Payload will be sent with `POST` request to `<API_URL>/job`. Expected response
+code is `200`.
 
 **User takes a job:**
 
