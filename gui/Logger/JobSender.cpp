@@ -28,10 +28,12 @@ m_settings(settings),
 m_running(false),
 m_sending(false)
 {
+    curl_global_init(CURL_GLOBAL_ALL);
 }
 
 JobSender::~JobSender() {
     stop();
+    curl_global_cleanup();
 }
 
 bool JobSender::start() {
@@ -139,7 +141,6 @@ bool JobSender::send_data(const std::string &url, const char *data, wxString &er
     CURL *curl;
     CURLcode res;
 
-    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (!curl) {
         curl_global_cleanup();
@@ -172,7 +173,6 @@ bool JobSender::send_data(const std::string &url, const char *data, wxString &er
     }
 
     curl_easy_cleanup(curl);
-    curl_global_cleanup();
 
     return ret;
 }
