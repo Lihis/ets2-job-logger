@@ -65,7 +65,7 @@ bool Settings::SettingsLoad() {
     config->SetPath("api");
     m_url = config->Read("url", "");
     if (!m_url.empty()) {
-        if (m_url[m_url.length()] != '/') {
+        if (m_url[m_url.length() - 1] != '/') {
             m_url.append('/');
         }
     }
