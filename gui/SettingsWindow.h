@@ -36,6 +36,20 @@ public:
 
 protected:
     /**
+     * Install ETS2 checkbox check/uncheck event
+     *
+     * @param event
+     */
+    void on_install_ets2(wxCommandEvent &event) final;
+
+    /**
+     * Install ATS checkbox check/uncheck event
+     *
+     * @param event
+     */
+    void on_install_ats(wxCommandEvent &event) final;
+
+    /**
      * Set settings when OK button is clicked and close dialog
      * @fixme Validation should be done on Settings side
      */

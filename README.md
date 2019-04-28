@@ -1,6 +1,7 @@
 # ETS2 Job Logger
 
-Cross-platform Euro Truck Simulator 2 job logger written in C++.
+Cross-platform Euro Truck Simulator 2 and American Truck Simulator job logger
+written in C++.
 
 ## Functionality
 
@@ -22,6 +23,7 @@ user finishes the job.
 
 ```
 {
+    "game": "ets2",               // Game type (ets2, ats)
     "onJob": true,
     "delivered": false,
     "distanceDriven": 10.0,       // Kilometers

@@ -221,7 +221,6 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
 
     if (packetType == PacketType::Job) {
         m_job = obj.as<job_t>();
-        printf("Game: %d\n", m_job.game);
         if (m_job.source.city != "-" && m_job.destination.city != "-") {
             m_sender->send(m_job);
         }

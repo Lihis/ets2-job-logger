@@ -49,6 +49,20 @@ public:
     wxString GetETS2Path() const;
 
     /**
+     * Set ATS game path
+     *
+     * @param path
+     */
+    void SetATSPath(const wxString &path);
+
+    /**
+     * Get ATS game path
+     *
+     * @return
+     */
+    wxString GetATSPath() const;
+
+    /**
      * Set API url
      *
      * @param url
@@ -110,6 +124,7 @@ private:
     wxString getConfigDir() const;
 
     wxString m_ets2_path;
+    wxString m_ats_path;
     wxString m_url;
     wxString m_token;
 };

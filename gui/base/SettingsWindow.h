@@ -10,11 +10,12 @@
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/string.h>
-#include <wx/stattext.h>
+#include <wx/checkbox.h>
 #include <wx/gdicmn.h>
 #include <wx/font.h>
 #include <wx/colour.h>
 #include <wx/settings.h>
+#include <wx/stattext.h>
 #include <wx/filepicker.h>
 #include <wx/sizer.h>
 #include <wx/statbox.h>
@@ -38,12 +39,17 @@ namespace base
 		private:
 
 		protected:
+			wxCheckBox* m_checkBoxETS2;
 			wxDirPickerCtrl* m_dirCtrlETS2Path;
+			wxCheckBox* m_checkBoxATS;
+			wxDirPickerCtrl* m_dirCtrlATSPath;
 			wxTextCtrl* m_textCtrlURL;
 			wxTextCtrl* m_textCtrlToken;
 			wxButton* m_buttonOK;
 
 			// Virtual event handlers, overide them in your derived class
+			virtual void on_install_ets2( wxCommandEvent& event ) = 0;
+			virtual void on_install_ats( wxCommandEvent& event ) = 0;
 			virtual void on_click_ok( wxCommandEvent& event ) = 0;
 
 

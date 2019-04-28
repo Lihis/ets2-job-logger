@@ -45,13 +45,20 @@ bool Application::OnInit() {
 
     bool needs_update;
     wxString error;
-    if (!PluginInstaller::needs_update(GetETS2Path(), needs_update, error)) {
-        wxMessageBox(error, "Error", wxOK, nullptr);
-        return false;
-    } else if (needs_update) {
-        if (!PluginInstaller::update(GetETS2Path(), error)) {
+    std::vector<wxString> game_paths = { GetETS2Path(), GetATSPath() };
+    for (const auto &path : game_paths) {
+        if (path.empty()) {
+            continue;
+        }
+
+        if (!PluginInstaller::needs_update(path, needs_update, error)) {
             wxMessageBox(error, "Error", wxOK, nullptr);
             return false;
+        } else if (needs_update) {
+            if (!PluginInstaller::update(path, error)) {
+                wxMessageBox(error, "Error", wxOK, nullptr);
+                return false;
+            }
         }
     }
 
