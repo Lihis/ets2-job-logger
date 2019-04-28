@@ -132,20 +132,35 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo) {
                 m_job.cargo.name = attr->value.value_string.value;
                 found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_id) {
+                m_job.cargo.id = attr->value.value_string.value;
+                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_mass) {
                 m_job.cargo.mass = attr->value.value_float.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city) {
                 m_job.source.city = attr->value.value_string.value;
                 found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city_id) {
+                m_job.source.cityId = attr->value.value_string.value;
+                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city) {
                 m_job.destination.city = attr->value.value_string.value;
+                found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city_id) {
+                m_job.destination.cityId = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company) {
                 m_job.source.company = attr->value.value_string.value;
                 found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company_id) {
+                m_job.source.companyId = attr->value.value_string.value;
+                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company) {
                 m_job.destination.company = attr->value.value_string.value;
+                found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company_id) {
+                m_job.destination.companyId = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_income) {
                 m_job.income = attr->value.value_u64.value;
@@ -153,7 +168,7 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             }
         }
 
-        bool onJob = (found == 7);
+        bool onJob = (found == 12);
         if (m_job.onJob && onJob) {
             m_odometerOnStart = -1.f;
             m_truck.fuel = -1.f;

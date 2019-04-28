@@ -132,33 +132,43 @@ struct job_t {
     struct cargo_t {
         cargo_t() {
             name = "-";
+            id = "";
             mass = 0.f;
         }
 
         std::string name;
+        std::string id;
         float mass;
-        MSGPACK_DEFINE(name, mass)
+        MSGPACK_DEFINE(name, id, mass)
     } cargo;
 
     struct source_t {
         source_t() {
             city = "-";
+            cityId = "";
             company = "-";
+            companyId = "";
         }
 
         std::string city;
+        std::string cityId;
         std::string company;
-        MSGPACK_DEFINE(city, company);
+        std::string companyId;
+        MSGPACK_DEFINE(city, cityId, company, companyId);
     } source;
 
     struct destination_t {
         destination_t() {
             city = "-";
+            cityId = "";
             company = "-";
+            companyId = "";
         }
         std::string city;
+        std::string cityId;
         std::string company;
-        MSGPACK_DEFINE(city, company);
+        std::string companyId;
+        MSGPACK_DEFINE(city, cityId, company, companyId);
     } destination;
 
     MSGPACK_DEFINE(game, onJob, delivered, drivenKm, fuelConsumed, income, trailer, cargo, source, destination);
@@ -186,11 +196,16 @@ struct job_t {
         root["fuelConsumed"] = fuelConsumed;
         root["trailerDamage"] = trailer.damage;
         root["cargoName"] = cargo.name;
+        root["cargoId"] = cargo.id;
         root["cargoMass"] = cargo.mass;
         root["sourceCity"] = source.city;
+        root["sourceCityId"] = source.cityId;
         root["sourceCompany"] = source.company;
+        root["sourceCompanyId"] = source.companyId;
         root["destinationCity"] = destination.city;
+        root["destinationCityId"] = destination.cityId;
         root["destinationCompany"] = destination.company;
+        root["destinationCompanyId"] = destination.companyId;
     }
 #endif
 };

@@ -30,11 +30,16 @@ user finishes the job.
     "fuelConsumed": 8.2,          // Liters
     "trailerDamage": 0.0,         // Percentage (eg. 10.0 = 10%)
     "cargoName": "Office Paper",
+    "cargoId": "paper",
     "cargoMass": 18000.0,         // Kilograms
     "sourceCity": "Tampere",
+    "sourceCityId": "tampere",
     "sourceCompany": "Viljo Paperitehdas Oy",
+    "sourceCompanyId": "viljo_paper",
     "destinationCity": "Helsinki",
-    "destinationCompany": "Container Port"
+    "destinationCityId": "helsinki",
+    "destinationCompany": "Container Port",
+    "destinationCompanyId": "cont_port"
 }
 ```
 
