@@ -37,16 +37,21 @@
 
 #define WEBSOCK_PORT 20210
 
-namespace JobPlugin {
-    enum PacketType {
-        Unknown = 0,
-        Version = 1,
-        Job = 2,
-        JobPartial = 3,
-        Truck = 4
-    };
-} // namespace Logger
-MSGPACK_ADD_ENUM(JobPlugin::PacketType)
+enum class PacketType {
+    Unknown = 0,
+    Version = 1,
+    Job = 2,
+    JobPartial = 3,
+    Truck = 4
+};
+MSGPACK_ADD_ENUM(PacketType)
+
+enum class Game {
+    Unknown = 0,
+    ETS2 = 1,
+    ATS = 2
+};
+MSGPACK_ADD_ENUM(Game)
 
 struct version_t {
     explicit version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
@@ -91,7 +96,8 @@ struct job_partial_t {
 };
 
 struct job_t {
-    job_t() {
+    explicit job_t(const Game &game = Game::Unknown) {
+        this->game = game;
         onJob = false;
         delivered = false;
         drivenKm = 0.f;
@@ -103,6 +109,7 @@ struct job_t {
         destination = {};
     }
 
+    Game game;
     bool onJob;
     bool delivered;
 
@@ -154,10 +161,25 @@ struct job_t {
         MSGPACK_DEFINE(city, company);
     } destination;
 
-    MSGPACK_DEFINE(onJob, delivered, drivenKm, fuelConsumed, income, trailer, cargo, source, destination);
+    MSGPACK_DEFINE(game, onJob, delivered, drivenKm, fuelConsumed, income, trailer, cargo, source, destination);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
+        std::string game_name;
+
+        switch (game) {
+            case Game::ETS2:
+                game_name = "ets2";
+                break;
+            case Game::ATS:
+                game_name = "ats";
+                break;
+            case Game::Unknown:
+            default:
+                break;
+        }
+
+        root["game"] = game_name;
         root["onJob"] = onJob;
         root["delivered"] = delivered;
         root["distanceDriven"] = drivenKm;
