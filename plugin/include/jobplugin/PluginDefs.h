@@ -49,7 +49,7 @@ namespace JobPlugin {
 MSGPACK_ADD_ENUM(JobPlugin::PacketType)
 
 struct version_t {
-    version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
+    explicit version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
         this->major = 0;
         this->minor = 0;
         this->patch = 0;
