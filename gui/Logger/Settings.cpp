@@ -32,6 +32,14 @@ wxString Settings::GetETS2Path() const {
     return m_ets2_path;
 }
 
+void Settings::SetATSPath(const wxString &path) {
+    m_ats_path = path;
+}
+
+wxString Settings::GetATSPath() const {
+    return m_ats_path;
+}
+
 void Settings::SetURL(const wxString &url) {
     m_url = url;
 }
@@ -59,8 +67,11 @@ bool Settings::SettingsLoad() {
 
     config = new wxFileConfig(wxEmptyString, wxEmptyString, confFile);
 
-    config->SetPath("game");
-    m_ets2_path = config->Read("ets2", "");
+    config->SetPath("ets2");
+    m_ets2_path = config->Read("path", "");
+
+    config->SetPath("ats");
+    m_ats_path = config->Read("path", "");
 
     config->SetPath("api");
     m_url = config->Read("url", "");
@@ -71,7 +82,9 @@ bool Settings::SettingsLoad() {
     }
     m_token = config->Read("token", "");
 
-    return (!m_ets2_path.empty() && !m_url.empty() && !m_token.empty());
+    bool plugin_path_ok = (!m_ets2_path.empty() || !m_ats_path.empty());
+
+    return (plugin_path_ok && !m_url.empty() && !m_token.empty());
 }
 
 bool Settings::SettingsSave() {
@@ -90,8 +103,12 @@ bool Settings::SettingsSave() {
     }
 
     config = new wxFileConfig(wxEmptyString, wxEmptyString, confFile);
-    config->SetPath("game");
-    config->Write("ets2", m_ets2_path);
+    config->SetPath("ets2");
+    config->Write("path", m_ets2_path);
+
+    config->SetPath("ats");
+    config->Write("path", m_ats_path);
+
     config->SetPath("api");
     config->Write("url", m_url);
     config->Write("token", m_token);

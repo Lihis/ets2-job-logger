@@ -38,7 +38,7 @@
 
 class Logger {
 public:
-    Logger();
+    Logger(const Game &game);
     ~Logger();
 
     /**
@@ -140,6 +140,7 @@ private:
     websocketpp::server<websocketpp::config::asio> m_server;
     std::set<websocketpp::connection_hdl,std::owner_less<websocketpp::connection_hdl>> m_connections;
 
+    Game m_game;
     std::time_t m_last_sent;
     truck_t m_truck;
     job_t m_job;

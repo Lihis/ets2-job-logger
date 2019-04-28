@@ -27,10 +27,11 @@
 #include <winbase.h>
 #endif
 
-Logger::Logger() :
+Logger::Logger(const Game &game) :
+m_game(game),
 m_last_sent(0),
 m_truck(),
-m_job(),
+m_job(game),
 m_odometerOnStart(-1.f)
 {
     m_server.clear_access_channels(websocketpp::log::alevel::all);
@@ -165,7 +166,7 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
         send_job();
 
         if (m_job.delivered) {
-            m_job = {};
+            m_job = job_t(m_game);
             m_odometerOnStart = -1.f;
         }
     }
@@ -178,7 +179,7 @@ void Logger::run() {
 void Logger::send_version() {
     version_t version(PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_PATCH);
     std::stringstream buffer;
-    msgpack::pack(buffer, JobPlugin::Version);
+    msgpack::pack(buffer, PacketType::Version);
     msgpack::pack(buffer, version);
 
     LockGuard lock(m_lock);
@@ -189,7 +190,7 @@ void Logger::send_job() {
     LockGuard lock(m_lock);
 
     std::stringstream buffer;
-    msgpack::pack(buffer, JobPlugin::Job);
+    msgpack::pack(buffer, PacketType::Job);
     msgpack::pack(buffer, m_job);
 
     send(buffer.str());
@@ -199,7 +200,7 @@ void Logger::send_job_partial() {
     LockGuard lock(m_lock);
 
     std::stringstream buffer;
-    msgpack::pack(buffer, JobPlugin::JobPartial);
+    msgpack::pack(buffer, PacketType::JobPartial);
     msgpack::pack(buffer, job_partial_t(m_job.drivenKm, m_job.fuelConsumed, m_job.trailer.damage));
 
     send(buffer.str());

@@ -31,7 +31,7 @@ MainWindow::MainWindow(Settings *settings) :
 base::MainWindow(nullptr),
 m_sender(nullptr),
 m_settings(settings),
-m_job(),
+m_job(Game::Unknown),
 m_socket_running(false)
 {
     m_client.clear_access_channels(websocketpp::log::alevel::all);
@@ -62,9 +62,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_job_update(wxCommandEvent &event) {
-    const auto type = static_cast<JobPlugin::PacketType>(event.GetInt());
+    const auto type = static_cast<PacketType>(event.GetInt());
 
-    if (type == JobPlugin::Job) {
+    if (type == PacketType::Job) {
         m_lblCargo->SetLabel(wxString::FromUTF8(m_job.cargo.name.c_str()));
         if (m_job.source.city != "-") {
             wxString origin(wxString::FromUTF8(m_job.source.city.c_str()));
@@ -201,16 +201,16 @@ void MainWindow::socket_connect() {
 }
 
 void MainWindow::socket_on_fail() {
-    m_job = {};
+    m_job = job_t(m_job.game);
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
-    event.SetInt(JobPlugin::Job);
+    event.SetInt(static_cast<int>(PacketType::Job));
     AddPendingEvent(event);
     socket_connect();
 }
 
 void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
                                    const WebsocketMessage &msg) {
-    JobPlugin::PacketType packetType;
+    PacketType packetType;
     std::size_t offset = 0;
     {
         auto oh = msgpack::unpack(msg->get_payload().c_str(), msg->get_payload().size(), offset);
@@ -219,39 +219,39 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
     auto oh = msgpack::unpack(msg->get_payload().c_str(), msg->get_payload().size(), offset);
     const auto &obj = oh.get();
 
-    if (packetType == JobPlugin::Job) {
+    if (packetType == PacketType::Job) {
         m_job = obj.as<job_t>();
         if (m_job.source.city != "-" && m_job.destination.city != "-") {
             m_sender->send(m_job);
         }
 
         if (m_job.delivered) {
-            m_job = {};
+            m_job = job_t(m_job.game);
         }
-    } else if (packetType == JobPlugin::JobPartial) {
+    } else if (packetType == PacketType::JobPartial) {
         job_partial_t jobPartial = obj.as<job_partial_t>();
         m_job.drivenKm = jobPartial.drivenKm;
         m_job.fuelConsumed = jobPartial.fuelConsumed;
         m_job.trailer.damage = jobPartial.trailerDamage;
-    } else if (packetType == JobPlugin::Version) {
+    } else if (packetType == PacketType::Version) {
         version_t version = obj.as<version_t>();
         // FIXME: Show error of mismatching plugin version
         if (version.major != PLUGIN_VERSION_MAJOR && version.minor != PLUGIN_VERSION_MINOR) {
             m_client.close(hdl, websocketpp::close::status::unsupported_data, "");
         }
-    } else if (packetType == JobPlugin::Unknown) {
+    } else if (packetType == PacketType::Unknown) {
         return;
     }
 
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
-    event.SetInt(packetType);
+    event.SetInt(static_cast<int>(packetType));
     AddPendingEvent(event);
 }
 
 void MainWindow::socket_on_close() {
-    m_job = {};
+    m_job = job_t(m_job.game);
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
-    event.SetInt(JobPlugin::Job);
+    event.SetInt(static_cast<int>(PacketType::Job));
     AddPendingEvent(event);
     socket_connect();
 }

@@ -26,7 +26,18 @@ m_settings(settings)
 {
     SetReturnCode(wxID_CANCEL);
 
+    bool install_ets2 = !m_settings->GetETS2Path().empty();
+    bool install_ats = !m_settings->GetATSPath().empty();
+
+    if (!install_ets2 && !install_ats) {
+        m_dirCtrlETS2Path->Enable(true);
+    } else {
+        m_dirCtrlETS2Path->Enable(install_ets2);
+    }
+
     m_dirCtrlETS2Path->SetPath(m_settings->GetETS2Path());
+    m_dirCtrlATSPath->Enable(install_ats);
+    m_dirCtrlATSPath->SetPath(m_settings->GetATSPath());
 
     if (!m_settings->GetURL().empty()) {
         m_textCtrlURL->SetValue(m_settings->GetURL());
@@ -35,12 +46,40 @@ m_settings(settings)
     m_textCtrlToken->SetValue(m_settings->GetToken());
 }
 
+void SettingsWindow::on_install_ets2(wxCommandEvent &event) {
+    m_dirCtrlETS2Path->Enable(m_checkBoxETS2->IsChecked());
+}
+
+void SettingsWindow::on_install_ats(wxCommandEvent &event) {
+    m_dirCtrlATSPath->Enable(m_checkBoxATS->IsChecked());
+}
+
 void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
-    if (m_dirCtrlETS2Path->GetPath().empty()) {
-        wxMessageBox("Path to ETS2 must be selected.", "Error", wxOK, this);
+    if (!m_checkBoxETS2->IsChecked() && !m_checkBoxATS->IsChecked()) {
+        wxMessageBox("Plugin must be installed either for ETS2 or ATS.", "Error", wxOK, this);
         return;
+    }
+
+    if (m_checkBoxETS2->IsChecked()) {
+        if (m_dirCtrlETS2Path->GetPath().empty()) {
+            wxMessageBox("Path to ETS2 must be selected.", "Error", wxOK, this);
+            return;
+        } else {
+            m_settings->SetETS2Path(m_dirCtrlETS2Path->GetPath());
+        }
     } else {
-        m_settings->SetETS2Path(m_dirCtrlETS2Path->GetPath());
+        m_settings->SetETS2Path("");
+    }
+
+    if (m_checkBoxATS->IsChecked()) {
+        if (m_dirCtrlATSPath->GetPath().empty()) {
+            wxMessageBox("Path to ATS must be selected.", "Error", wxOK, this);
+            return;
+        } else {
+            m_settings->SetATSPath(m_dirCtrlATSPath->GetPath());
+        }
+    } else {
+        m_settings->SetATSPath("");
     }
 
     if (m_textCtrlURL->GetValue().empty()) {

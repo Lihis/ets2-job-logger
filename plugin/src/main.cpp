@@ -30,6 +30,8 @@
 #include <scs/common/scssdk_telemetry_common_configs.h>
 #include <scs/common/scssdk_telemetry_truck_common_channels.h>
 #include <scs/common/scssdk_telemetry_trailer_common_channels.h>
+#include <scs/amtrucks/scssdk_ats.h>
+#include <scs/eurotrucks2/scssdk_eut2.h>
 
 typedef std::function<SCSAPI_VOID(const scs_value_t *const)> callback_channel_t;
 typedef std::function<SCSAPI_VOID(const void *const event_info)> callback_event_t;
@@ -87,7 +89,20 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
         return SCS_RESULT_unsupported;
     }
 
-    logger = new Logger();
+    Game game = Game::Unknown;
+    std::string game_name = init_params->common.game_id;
+    if (game_name == SCS_GAME_ID_EUT2) {
+        game = Game::ETS2;
+    } else if (game_name == SCS_GAME_ID_ATS) {
+        game = Game::ATS;
+    }
+
+    if (game == Game::Unknown) {
+        init_params->common.log(SCS_LOG_TYPE_error, "ETS2 Job Logger: Unsupported game");
+        return SCS_RESULT_unsupported;
+    }
+
+    logger = new Logger(game);
     if (!logger) {
         return SCS_RESULT_generic_error;
     }
