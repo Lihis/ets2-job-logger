@@ -194,6 +194,7 @@ struct job_t {
         root["delivered"] = delivered;
         root["distanceDriven"] = drivenKm;
         root["fuelConsumed"] = fuelConsumed;
+        root["income"] = income;
         root["trailerDamage"] = trailer.damage;
         root["cargoName"] = cargo.name;
         root["cargoId"] = cargo.id;

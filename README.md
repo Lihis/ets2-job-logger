@@ -28,6 +28,7 @@ user finishes the job.
     "delivered": false,
     "distanceDriven": 10.0,       // Kilometers
     "fuelConsumed": 8.2,          // Liters
+    "income": 6878                // In game specific units (€, $)
     "trailerDamage": 0.0,         // Percentage (eg. 10.0 = 10%)
     "cargoName": "Office Paper",
     "cargoId": "paper",
