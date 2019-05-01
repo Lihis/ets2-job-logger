@@ -22,6 +22,8 @@
 #include <curl/curl.h>
 #include <sstream>
 
+#define API_VERSION "v1"
+
 JobSender::JobSender(wxEvtHandler *handler, Settings *settings) :
 m_handler(handler),
 m_settings(settings),
@@ -96,6 +98,13 @@ wxThread::ExitCode JobSender::Entry() {
     return static_cast<wxThread::ExitCode>(nullptr);
 }
 
+std::string JobSender::generate_url(const std::string &endpoint) {
+    std::string url(m_settings->GetURL().append(API_VERSION));
+    url.append("/" + endpoint);
+
+    return url;
+}
+
 bool JobSender::send_job() {
     bool ret;
     {
@@ -106,7 +115,7 @@ bool JobSender::send_job() {
     }
 
     job_t job;
-    std::string url(m_settings->GetURL().mbc_str() + std::string("job"));
+    std::string url = generate_url("job");
     Json::Value json;
     wxString error;
 

@@ -72,6 +72,14 @@ private:
     wxThread::ExitCode Entry() override;
 
     /**
+     * Generate full URL to endpoint
+     *
+     * @param endpoint
+     * @return
+     */
+    std::string generate_url(const std::string &endpoint);
+
+    /**
      * Send job information to the API
      *
      * If sending failed, message is pushed back to queue
