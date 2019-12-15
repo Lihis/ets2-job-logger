@@ -27,11 +27,14 @@
 #include "Logger.h"
 #include <functional>
 #include <scs/scssdk_telemetry.h>
-#include <scs/common/scssdk_telemetry_common_configs.h>
 #include <scs/common/scssdk_telemetry_truck_common_channels.h>
 #include <scs/common/scssdk_telemetry_trailer_common_channels.h>
 #include <scs/amtrucks/scssdk_ats.h>
 #include <scs/eurotrucks2/scssdk_eut2.h>
+
+#ifndef _WIN32
+#define __stdcall
+#endif
 
 typedef std::function<SCSAPI_VOID(const scs_value_t *const)> callback_channel_t;
 typedef std::function<SCSAPI_VOID(const void *const event_info)> callback_event_t;
@@ -46,19 +49,19 @@ callback_event_t config_cb;
 
 namespace cb {
     namespace bind {
-        callback_channel_t channel(void (Logger::*func)(const scs_value_t *const), Logger *obj) {
+        callback_channel_t channel(void (__stdcall Logger::*func)(const scs_value_t *const), Logger *obj) {
             return std::bind(func, obj, std::placeholders::_1);
         }
 
-        callback_event_t event(void (Logger::*func)(const scs_telemetry_frame_start_t *const), Logger *obj) {
+        callback_event_t event(void (__stdcall Logger::*func)(const scs_telemetry_frame_start_t *const), Logger *obj) {
             return std::bind((void (Logger::*)(const void *const))(func), obj, std::placeholders::_1);
         }
 
-        callback_event_t event(void (Logger::*func)(const void *const), Logger *obj) {
+        callback_event_t event(void (__stdcall Logger::*func)(const void *const), Logger *obj) {
             return std::bind((void (Logger::*)(const void *const))(func), obj, std::placeholders::_1);
         }
 
-        callback_event_t event(void (Logger::*func)(const scs_telemetry_configuration_t *), Logger *obj) {
+        callback_event_t event(void (__stdcall Logger::*func)(const scs_telemetry_configuration_t *), Logger *obj) {
             return std::bind((void (Logger::*)(const void *const))(func), obj, std::placeholders::_1);
         }
     }

@@ -1,7 +1,7 @@
 project(plugin VERSION 0.1.0)
 
 add_library(${PROJECT_NAME}
-            SHARED
+            OBJECT
             include/jobplugin/PluginDefs.h
 
             src/Logger.cpp
@@ -13,6 +13,8 @@ add_library(${PROJECT_NAME}
 configure_file(include/jobplugin/Version.h.in "include/jobplugin/Version.h")
 
 add_library(ets2joblogger::plugin ALIAS ${PROJECT_NAME})
+add_library(plugin_shared SHARED $<TARGET_OBJECTS:${PROJECT_NAME}>)
+add_library(plugin_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 
 find_package(msgpack REQUIRED)
 find_package(websocketpp REQUIRED)
@@ -34,7 +36,13 @@ if(MINGW)
         )
 endif()
 
-set_target_properties(${PROJECT_NAME}
+set_target_properties(plugin_shared
+                      PROPERTIES
+                      OUTPUT_NAME "ets2-job-logger"
+                      PREFIX ""
+                      )
+
+set_target_properties(plugin_static
                       PROPERTIES
                       OUTPUT_NAME "ets2-job-logger"
                       PREFIX ""
@@ -47,12 +55,11 @@ target_link_libraries(${PROJECT_NAME}
                       )
 
 target_include_directories(${PROJECT_NAME}
-                           INTERFACE
-                           "${CMAKE_CURRENT_LIST_DIR}/include"
                            PUBLIC
-                           "${CMAKE_CURRENT_BINARY_DIR}/include"
+                           $<INSTALL_INTERFACE:include>
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
                            PRIVATE
-                           "${CMAKE_CURRENT_SOURCE_DIR}/include"
                            "${WEBSOCKETPP_INCLUDE_DIR}"
                            )
 

@@ -1,0 +1,12 @@
+[requires]
+msgpack/3.2.0@bincrafters/stable
+websocketpp/0.8.1@bincrafters/stable
+libcurl/7.64.1@bincrafters/stable
+jsoncpp/1.8.4@theirix/stable
+wxwidgets/3.1.2@bincrafters/stable
+
+[generators]
+cmake
+
+[options]
+libcurl:with_openssl=True
