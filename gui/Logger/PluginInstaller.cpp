@@ -88,6 +88,7 @@ wxString get_plugin_file_path(const PluginInstaller::Platform &platform) {
         default:
             break;
     }
+    path.append(wxFileName::GetPathSeparator());
 #endif
 
     path.append("ets2-job-logger" + get_plugin_extension(platform));
