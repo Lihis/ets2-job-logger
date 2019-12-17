@@ -29,11 +29,24 @@ set(SOURCES
     )
 
 find_package(wxWidgets 3.0 REQUIRED)
-find_package(CURL REQUIRED)
-find_package(PkgConfig REQUIRED)
-find_package(OpenSSL REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp REQUIRED)
 include(${wxWidgets_USE_FILE})
+if (MSVC)
+    find_package(PNG REQUIRED)
+    set(Boost_USE_STATIC_LIBS ON)
+    find_package(Boost REQUIRED COMPONENTS random)
+endif()
+find_package(ZLIB REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
+if (MSVC)
+    find_package(jsoncpp CONFIG REQUIRED)
+    set(JSONCPP_LIBRARIES jsoncpp_lib_static)
+    set(JSONCPP_INCLUDE_DIRS jsoncpp_lib_static)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JSONCPP jsoncpp REQUIRED)
+endif()
 
 if (NOT WIN32)
     if (PLUGIN_PATH)
@@ -48,18 +61,28 @@ configure_file(Logger/PluginInstallerDefs.h.in PluginInstallerDefs.h)
 
 add_executable(ets2-job-logger WIN32 ${SOURCES})
 
-if (WIN32)
+if (MINGW)
     set(WIN32_LIBS -lws2_32)
+elseif (WIN32)
+    find_library(WS2_32_LIB ws2_32.lib REQUIRED)
+    find_library(GDI32_LIB gdi32.lib REQUIRED)
+    find_library(ADVAPI32_LIB advapi32.lib REQUIRED)
+    find_library(CRYPT32_LIB crypt32.lib REQUIRED)
+    find_library(USER32_LIB user32.lib REQUIRED)
+    set(WIN32_LIBS ${WS2_32_LIB} ${GDI32_LIB} ${ADVAPI32_LIB} ${CRYPT32_LIB} ${USER32_LIB})
 endif()
 
 target_link_libraries(ets2-job-logger
                       PRIVATE
                       ets2joblogger::plugin
                       ${wxWidgets_LIBRARIES}
+                      ${PNG_LIBRARIES}
+                      ${Boost_LIBRARIES}
                       ${WIN32_LIBS}
-                      ${JSONCPP_LIBRARIES}
+                      ${ZLIB_LIBRARIES}
+                      ${OPENSSL_LIBRARIES}
                       ${CURL_LIBRARIES}
-                      ${OPENSSL_CRYPTO_LIBRARY}
+                      ${JSONCPP_LIBRARIES}
                       )
 
 target_include_directories(ets2-job-logger
@@ -68,8 +91,12 @@ target_include_directories(ets2-job-logger
                            "${CMAKE_CURRENT_BINARY_DIR}"
                            "${WEBSOCKETPP_INCLUDE_DIR}"
                            "${wxWidgets_INCLUDE_DIRS}"
-                           "${JSONCPP_INCLUDE_DIRS}"
+                           "${PNG_INCLUDE_DIRS}"
+                           "${Boost_INCLUDE_DIRS}"
+                           "${ZLIB_INCLUDE_DIRS}"
+                           "${OPENSSL_INCLUDE_DIRS}"
                            "${CURL_INCLUDE_DIRS}"
+                           "${JSONCPP_INCLUDE_DIRS}"
                            )
 
 target_compile_options(ets2-job-logger

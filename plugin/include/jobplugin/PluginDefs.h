@@ -28,7 +28,7 @@
 #ifndef ETS2_JOB_LOGGER_PLUGINDEFS_H
 #define ETS2_JOB_LOGGER_PLUGINDEFS_H
 
-#include "jobplugin/Version.h"
+#include <jobplugin/Version.h>
 #include <string>
 #include <msgpack.hpp>
 #ifndef PLUGIN_INTERNAL

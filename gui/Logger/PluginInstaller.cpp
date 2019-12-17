@@ -120,8 +120,8 @@ wxString get_game_bin_directory(const PluginInstaller::Platform &platform,
 }
 
 wxString get_sha256(const wxString &file) {
-    std::ifstream f(file, std::ios::in | std::ios::binary);
-    if (!f.good()) {
+    wxFile f(file, wxFile::OpenMode::read);
+    if (!f.IsOpened()){
         return "";
     }
 
@@ -131,13 +131,13 @@ wxString get_sha256(const wxString &file) {
     SHA256_CTX ctx;
     SHA256_Init(&ctx);
 
-    while (f.good()) {
-        f.read(buffer, 4096);
-        SHA256_Update(&ctx, buffer, f.gcount());
+    while (!f.Eof()) {
+        auto read = f.Read(buffer, 4096);
+        SHA256_Update(&ctx, buffer, read);
     }
 
     SHA256_Final(hash, &ctx);
-    f.close();
+    f.Close();
 
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
