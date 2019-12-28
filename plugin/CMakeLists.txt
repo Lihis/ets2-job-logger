@@ -12,8 +12,12 @@ add_library(${PROJECT_NAME}
 
 configure_file(include/jobplugin/Version.h.in "include/jobplugin/Version.h")
 
+if (MSVC)
+    set(PLUGIN_DLL_DEF plugin.def)
+endif()
+
 add_library(ets2joblogger::plugin ALIAS ${PROJECT_NAME})
-add_library(plugin_shared SHARED $<TARGET_OBJECTS:${PROJECT_NAME}>)
+add_library(plugin_shared SHARED $<TARGET_OBJECTS:${PROJECT_NAME}> ${PLUGIN_DLL_DEF})
 add_library(plugin_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 
 find_package(msgpack REQUIRED)
