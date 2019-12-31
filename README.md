@@ -89,17 +89,6 @@ conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
   > C:/Users/Test/CMakeBuilds/d76aad98-e5ad-0738-bbe9-bc20c6d93f9c/build/x64-Debug/conanbuildinfo.cmake`
 - Open PowerShell in the source directory and run:
   - `conan install . -s build_type=Debug -if='<PATH_FROM_PREVIOUS_STEP>'`
-  - `msgpack-c` version `2.3.0` has issue which needs an manual fix:
-    - Go to `C:\Users\<YOUR_USERNAME>\.conan\data\msgpack\3.2.0\bincrafters\stable\package`.
-      This directory should have two directories.
-    - In both directories go to `lib\cmake\msgpack`
-      and open `msgpack-config.cmake` file in your favorite text editor.
-    - Remove following lines at the bottom:
-      ```
-      if(NOT OFF)
-        add_library(msgpackc ALIAS msgpackc-static)
-      endif()
-      ```
 - After installation finished go back to Visual Studio click `Generate` in the
   notification.
 - After CMake generation finished you're ready to build.
