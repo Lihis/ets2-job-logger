@@ -10,9 +10,11 @@ add_library(${PROJECT_NAME}
             src/main.cpp
             )
 
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 configure_file(include/jobplugin/Version.h.in "include/jobplugin/Version.h")
 
-if (MSVC)
+if(MSVC)
     set(PLUGIN_DLL_DEF plugin.def)
 endif()
 
@@ -23,7 +25,7 @@ add_library(plugin_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 find_package(msgpack REQUIRED)
 find_package(websocketpp REQUIRED)
 
-if (WIN32)
+if(WIN32)
     target_compile_options(${PROJECT_NAME}
                            PRIVATE
                            -DUNICODE
