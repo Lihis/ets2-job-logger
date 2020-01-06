@@ -8,6 +8,8 @@ install:
   - conan user
   - conan remote add public-conan https://api.bintray.com/conan/bincrafters/public-conan
   - conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
+  - cd "%APPVEYOR_BUILD_FOLDER%"
+  - git submodule update --init --recursive
 
 build_script:
   - mkdir build

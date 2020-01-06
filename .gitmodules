@@ -1,3 +1,3 @@
 [submodule "scs-sdk"]
 	path = scs-sdk
-	url = git@github.com:Lihis/scs-sdk.git
+	url = https://github.com/Lihis/scs-sdk.git
