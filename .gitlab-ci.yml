@@ -10,7 +10,7 @@ debian:
   script:
     - apt-get update -yq
     - apt-get install -yq build-essential cmake libmsgpack-dev
-      libwebsocketpp-dev libcurl4-openssl-dev libssl-dev
+      libwebsocketpp-dev zlib1g-dev libcurl4-openssl-dev libssl-dev
       libjsoncpp-dev libwxgtk3.0-dev
     - mkdir build && cd build
     - cmake ..
