@@ -3,6 +3,10 @@
 Cross-platform Euro Truck Simulator 2 and American Truck Simulator job logger
 written in C++.
 
+| Linux | Windows | MacOS |
+| ----- | ------- | ----- |
+| [![pipeline status](https://gitlab.com/Lihis/ets2-job-logger/badges/master/pipeline.svg)](https://gitlab.com/Lihis/ets2-job-logger/commits/master) | [![Build status](https://ci.appveyor.com/api/projects/status/ev7ijqvsoclm84v4/branch/master?svg=true)](https://ci.appveyor.com/project/Lihis/ets2-job-logger/branch/master) | see [#16](https://github.com/Lihis/ets2-job-logger/issues/16) |
+
 ## Functionality
 
 ETS2 Job Logger consists of wxWidgets based application and ETS2 plugin.
