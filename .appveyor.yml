@@ -6,6 +6,8 @@ install:
   - set PATH=%PATH%;C:\Python37-x64\Scripts
   - pip.exe install conan
   - conan user
+  - conan remote add public-conan https://api.bintray.com/conan/bincrafters/public-conan
+  - conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
 
 build_script:
   - mkdir build
