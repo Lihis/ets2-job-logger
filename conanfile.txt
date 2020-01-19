@@ -8,3 +8,7 @@ wxwidgets/3.1.2@bincrafters/stable
 
 [generators]
 cmake
+
+[options]
+libcurl:with_openssl=False
+libucrl:with_winssl=True
