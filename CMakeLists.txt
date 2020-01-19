@@ -10,4 +10,6 @@ endif()
 
 add_subdirectory(scs-sdk)
 add_subdirectory(plugin)
-add_subdirectory(gui)
+if(NOT MINGW)
+    add_subdirectory(gui)
+endif()

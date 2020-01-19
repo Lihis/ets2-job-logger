@@ -40,7 +40,7 @@ public:
     /**
      * Start job sender
      *
-     * @return true if started, false otherwise
+     * @return bool - true if started, false otherwise
      */
     bool start();
 
@@ -52,22 +52,29 @@ public:
     /**
      * Has messages in queue to be sent to API
      *
-     * @return true if message in queue, false otherwise
+     * @return bool - true if message in queue, false otherwise
      */
     bool hasPending();
 
     /**
-     * Send job to API
+     * Add job information to send queue
      *
      * @param job
      */
     void send(const job_t &job);
 
+    /**
+     * Add truck information to send queue
+     *
+     * @param truck
+     */
+    void send(const truck_t &truck);
+
 private:
     /**
      * Main loop
      *
-     * @return
+     * @return wxThread::ExitCode
      */
     wxThread::ExitCode Entry() override;
 
@@ -75,7 +82,7 @@ private:
      * Generate full URL to endpoint
      *
      * @param endpoint
-     * @return
+     * @return std::string
      */
     std::string generate_url(const std::string &endpoint);
 
@@ -83,9 +90,18 @@ private:
      * Send job information to the API
      *
      * If sending failed, message is pushed back to queue
-     * @return true if job was sent successfully, false otherwise
+     *
+     * @return bool - true if job was sent successfully, false otherwise
      */
     bool send_job();
+
+    /**
+     * Send truck information to the API
+     *
+     * Response from server is ignored and message
+     * will not be sent again.
+     */
+    void send_truck();
 
     /**
      * Wrapper to send data to the API
@@ -93,7 +109,7 @@ private:
      * @param url - Full URL
      * @param data - Data to send
      * @param error - Error message
-     * @return true if sent successfully, false otherwise
+     * @return bool - true if sent successfully, false otherwise
      */
     bool send_data(const std::string &url, const char *data, wxString &error);
 
@@ -105,6 +121,7 @@ private:
     bool m_running;
     bool m_sending;
     std::vector<job_t> m_job_queue;
+    std::deque<truck_t> m_truck_queue;
 };
 
 #endif //ETS2_JOB_LOGGER_JOBSENDER_H

@@ -77,6 +77,11 @@ void JobSender::send(const job_t &job) {
     m_job_queue.push_back(job);
 }
 
+void JobSender::send(const truck_t &truck) {
+    LockGuard lock(m_lock);
+    m_truck_queue.push_back(truck);
+}
+
 wxThread::ExitCode JobSender::Entry() {
     Json::Value json;
     wxString error;
@@ -88,6 +93,8 @@ wxThread::ExitCode JobSender::Entry() {
             job_send_failed = !send_job();
             job_sent_time = wxGetUTCTime();
         }
+
+        send_truck();
 
         if (GetThread()->TestDestroy()) {
             m_running = false;
@@ -143,6 +150,30 @@ bool JobSender::send_job() {
     m_sending = false;
 
     return ret;
+}
+
+void JobSender::send_truck() {
+    truck_t truck;
+    std::string url = generate_url("truck");
+    Json::Value json;
+    wxString error;
+
+    {
+        LockGuard lock(m_lock);
+        if (m_truck_queue.empty()) {
+            return;
+        }
+        m_sending = true;
+        truck = m_truck_queue.front();
+        m_truck_queue.pop_front();
+    }
+
+    truck.Serialize(json);
+
+    send_data(url, json.toStyledString().c_str(), error);
+
+    LockGuard lock(m_lock);
+    m_sending = false;
 }
 
 bool JobSender::send_data(const std::string &url, const char *data, wxString &error) {

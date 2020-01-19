@@ -30,7 +30,7 @@ set(SOURCES
 
 find_package(wxWidgets 3.0 REQUIRED)
 include(${wxWidgets_USE_FILE})
-if (MSVC)
+if(MSVC)
     find_package(PNG REQUIRED)
     set(Boost_USE_STATIC_LIBS ON)
     find_package(Boost REQUIRED COMPONENTS random)
@@ -41,7 +41,7 @@ find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
 find_package(OpenSSL REQUIRED)
-if (MSVC)
+if(MSVC)
     find_package(jsoncpp CONFIG REQUIRED)
     set(JSONCPP_LIBRARIES jsoncpp_lib_static)
     set(JSONCPP_INCLUDE_DIRS jsoncpp_lib_static)
@@ -50,7 +50,7 @@ else()
     pkg_check_modules(JSONCPP jsoncpp REQUIRED)
 endif()
 
-if (NOT WIN32)
+if(NOT WIN32)
     if (PLUGIN_PATH)
         set(PLUGIN_INSTALL_PATH ${PLUGIN_PATH})
     else()
@@ -63,7 +63,7 @@ configure_file(Logger/PluginInstallerDefs.h.in PluginInstallerDefs.h)
 
 add_executable(ets2-job-logger WIN32 ${SOURCES})
 
-if (MINGW)
+if(MINGW)
     set(WIN32_LIBS -lws2_32)
 elseif (WIN32)
     find_library(WS2_32_LIB ws2_32.lib REQUIRED)
@@ -108,7 +108,7 @@ target_compile_options(ets2-job-logger
                        ${JSON_CPP_CFLAGS_OTHER}
                        )
 
-if (DEVELOPMENT)
+if(DEVELOPMENT)
     target_compile_options(ets2-job-logger
                            PRIVATE
                            -DDEVELOPMENT=1

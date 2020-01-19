@@ -101,9 +101,9 @@ MainWindow::MainWindow( wxWindow* parent, wxWindowID id, const wxString& title, 
 	m_staticTextTrailerDamage->Wrap( -1 );
 	fgSizer3->Add( m_staticTextTrailerDamage, 0, wxALL, 5 );
 
-	m_lblTrailerDamage = new wxStaticText( sbSizer3->GetStaticBox(), wxID_ANY, wxT("-"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_lblTrailerDamage->Wrap( -1 );
-	fgSizer3->Add( m_lblTrailerDamage, 0, wxALL, 5 );
+	m_lblCargoDamage = new wxStaticText( sbSizer3->GetStaticBox(), wxID_ANY, wxT("-"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_lblCargoDamage->Wrap( -1 );
+	fgSizer3->Add( m_lblCargoDamage, 0, wxALL, 5 );
 
 	wxStaticText* m_staticTextDriven;
 	m_staticTextDriven = new wxStaticText( sbSizer3->GetStaticBox(), wxID_ANY, wxT("Distance driven:"), wxDefaultPosition, wxDefaultSize, 0 );
