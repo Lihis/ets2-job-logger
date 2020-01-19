@@ -41,7 +41,7 @@ namespace base
 			wxStaticText* m_lblDestination;
 			wxStaticText* m_lblMass;
 			wxStaticText* m_lblIncome;
-			wxStaticText* m_lblTrailerDamage;
+			wxStaticText* m_lblCargoDamage;
 			wxStaticText* m_lblDistanceDriven;
 			wxStaticText* m_lblFuelConsumed;
 

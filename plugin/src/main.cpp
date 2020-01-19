@@ -42,10 +42,14 @@ typedef std::function<SCSAPI_VOID(const void *const event_info)> callback_event_
 Logger *logger = nullptr;
 callback_channel_t odometer_cb;
 callback_channel_t fuel_cb;
+callback_channel_t speed_cb;
+callback_channel_t truckPlacement_cb;
 callback_channel_t trailerConnected_cb;
-callback_channel_t trailerDamage_cb;
-callback_event_t frameStart_cb;
+callback_event_t frameEnd_cb;
+callback_event_t eventPaused_cb;
+callback_event_t eventStarted_cb;
 callback_event_t config_cb;
+callback_event_t gameplay_cb;
 
 namespace cb {
     namespace bind {
@@ -62,6 +66,10 @@ namespace cb {
         }
 
         callback_event_t event(void (__stdcall Logger::*func)(const scs_telemetry_configuration_t *), Logger *obj) {
+            return std::bind((void (Logger::*)(const void *const))(func), obj, std::placeholders::_1);
+        }
+
+        callback_event_t event(void (__stdcall Logger::*func)(const scs_telemetry_gameplay_event_t *), Logger *obj) {
             return std::bind((void (Logger::*)(const void *const))(func), obj, std::placeholders::_1);
         }
     }
@@ -86,9 +94,9 @@ SCSAPI_VOID callback_event(const scs_event_t event, const void *const event_info
 }
 
 SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_init_params_t *const params) {
-    auto init_params = reinterpret_cast<const scs_telemetry_init_params_v100_t *>(params);
+    auto init_params = reinterpret_cast<const scs_telemetry_init_params_v101_t *>(params);
 
-    if (version != SCS_TELEMETRY_VERSION_1_00) {
+    if (version != SCS_TELEMETRY_VERSION_1_01) {
         return SCS_RESULT_unsupported;
     }
 
@@ -117,16 +125,29 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
     fuel_cb = cb::bind::channel(&Logger::fuel, logger);
     init_params->register_for_channel(SCS_TELEMETRY_TRUCK_CHANNEL_fuel, SCS_U32_NIL, SCS_VALUE_TYPE_float, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&fuel_cb);
 
+    speed_cb = cb::bind::channel(&Logger::speed, logger);
+    init_params->register_for_channel(SCS_TELEMETRY_TRUCK_CHANNEL_speed, SCS_U32_NIL, SCS_VALUE_TYPE_float, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&speed_cb);
+
+    truckPlacement_cb = cb::bind::channel(&Logger::truckPlacement, logger);
+    init_params->register_for_channel(SCS_TELEMETRY_TRUCK_CHANNEL_world_placement, SCS_U32_NIL, SCS_VALUE_TYPE_dplacement, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&truckPlacement_cb);
+
     trailerConnected_cb = cb::bind::channel(&Logger::trailerConnected, logger);
     init_params->register_for_channel(SCS_TELEMETRY_TRAILER_CHANNEL_connected, SCS_U32_NIL, SCS_VALUE_TYPE_bool, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&trailerConnected_cb);
-    trailerDamage_cb = cb::bind::channel(&Logger::trailerDamage, logger);
-    init_params->register_for_channel(SCS_TELEMETRY_TRAILER_CHANNEL_wear_chassis, SCS_U32_NIL, SCS_VALUE_TYPE_float, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&trailerDamage_cb);
 
-    frameStart_cb = cb::bind::event(&Logger::frameStart, logger);
-    init_params->register_for_event(SCS_TELEMETRY_EVENT_frame_start, callback_event, (void *)&frameStart_cb);
+    frameEnd_cb = cb::bind::event(&Logger::frameEnd, logger);
+    init_params->register_for_event(SCS_TELEMETRY_EVENT_frame_end, callback_event, (void *)&frameEnd_cb);
+
+    eventPaused_cb = cb::bind::event(&Logger::eventPaused, logger);
+    init_params->register_for_event(SCS_TELEMETRY_EVENT_paused, callback_event, (void *)&eventPaused_cb);
+
+    eventStarted_cb = cb::bind::event(&Logger::eventStarted, logger);
+    init_params->register_for_event(SCS_TELEMETRY_EVENT_started, callback_event, (void *)&eventStarted_cb);
 
     config_cb = cb::bind::event(&Logger::configuration, logger);
     init_params->register_for_event(SCS_TELEMETRY_EVENT_configuration, callback_event, (void *)&config_cb);
+
+    gameplay_cb = cb::bind::event(&Logger::gameplay, logger);
+    init_params->register_for_event(SCS_TELEMETRY_EVENT_gameplay, callback_event, (void *)&gameplay_cb);
 
     return SCS_RESULT_ok;
 }

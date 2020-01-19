@@ -41,8 +41,7 @@ enum class PacketType {
     Unknown = 0,
     Version = 1,
     Job = 2,
-    JobPartial = 3,
-    Truck = 4
+    Truck = 3
 };
 MSGPACK_ADD_ENUM(PacketType)
 
@@ -67,41 +66,89 @@ struct version_t {
     MSGPACK_DEFINE(major, minor, patch);
 };
 
+struct id_name_t {
+    id_name_t() {
+        id = "";
+        name = "";
+    }
+
+    std::string id;
+    std::string name;
+
+    MSGPACK_DEFINE(id, name);
+
+#ifndef PLUGIN_INTERNAL
+    void Serialize(Json::Value &root) const {
+        root["id"] = id;
+        root["name"] = name;
+    }
+#endif
+};
+typedef struct id_name_t city_t;
+typedef struct id_name_t company_t;
+
+struct source_destination_t {
+    city_t city;
+    company_t company;
+
+    MSGPACK_DEFINE(city, company);
+
+#ifndef PLUGIN_INTERNAL
+    void Serialize(Json::Value &root) const {
+        root["city"] = Json::Value();
+        root["company"] = Json::Value();
+
+        city.Serialize(root["city"]);
+        company.Serialize(root["company"]);
+    }
+#endif
+};
+typedef source_destination_t source_t;
+typedef source_destination_t destination_t;
+
 struct truck_t {
     truck_t() {
-        odometer = 0.f;
-        fuel = 0.f;
+        odometer = -1.f;
+        fuel = -1.f;
+        speed = 0.f;
     }
 
     float odometer;
     float fuel;
+    float speed;
+    double x;
+    double y;
+    double z;
+    float heading;
 
-    MSGPACK_DEFINE(odometer, fuel);
-};
+    MSGPACK_DEFINE(odometer, fuel, speed, x, y, z, heading);
 
-struct job_partial_t {
-    explicit job_partial_t(float drivenKm = 0.f,
-                           float fuelConsumed = 0.f,
-                           float trailerDamage = 0.f) {
-        this->drivenKm = drivenKm;
-        this->fuelConsumed = fuelConsumed;
-        this->trailerDamage = trailerDamage;
+#ifndef PLUGIN_INTERNAL
+    void Serialize(Json::Value &root) const {
+        root["speed"] = speed;
+        root["x"] = x;
+        root["y"] = y;
+        root["z"] = z;
+        root["heading"] = heading;
     }
-
-    float drivenKm;
-    float fuelConsumed;
-    float trailerDamage;
-
-    MSGPACK_DEFINE(drivenKm, fuelConsumed, trailerDamage);
+#endif
 };
+
+enum JobStatus {
+    FreeAsWind = 0,
+    OnJob = 1,
+    Cancelled = 2,
+    Delivered = 3
+};
+MSGPACK_ADD_ENUM(JobStatus);
 
 struct job_t {
     explicit job_t(const Game &game = Game::Unknown) {
         this->game = game;
-        onJob = false;
-        delivered = false;
-        drivenKm = 0.f;
+        status = JobStatus::FreeAsWind;
+        distance = {};
         fuelConsumed = 0.f;
+        maxSpeed = 0.f;
         income = 0;
         trailer = {};
         cargo = {};
@@ -110,68 +157,48 @@ struct job_t {
     }
 
     Game game;
-    bool onJob;
-    bool delivered;
+    JobStatus status;
 
-    float drivenKm;
+    struct distance_t {
+        float driven;
+        uint32_t planned;
+
+        MSGPACK_DEFINE(driven, planned);
+    } distance;
+    float estimatedKm;
     float fuelConsumed;
+    float maxSpeed;
 
     uint64_t income;
 
     struct trailer_t {
         trailer_t() {
             connected = false;
-            damage = 0.f;
         }
 
         bool connected;
-        float damage;
-        MSGPACK_DEFINE(connected, damage)
+        MSGPACK_DEFINE(connected)
     } trailer;
 
     struct cargo_t {
         cargo_t() {
-            name = "-";
             id = "";
+            name = "-";
             mass = 0.f;
+            damage = 0.f;
         }
 
-        std::string name;
         std::string id;
+        std::string name;
         float mass;
-        MSGPACK_DEFINE(name, id, mass)
+        float damage;
+        MSGPACK_DEFINE(name, id, mass, damage)
     } cargo;
 
-    struct source_t {
-        source_t() {
-            city = "-";
-            cityId = "";
-            company = "-";
-            companyId = "";
-        }
+    source_t source;
+    destination_t destination;
 
-        std::string city;
-        std::string cityId;
-        std::string company;
-        std::string companyId;
-        MSGPACK_DEFINE(city, cityId, company, companyId);
-    } source;
-
-    struct destination_t {
-        destination_t() {
-            city = "-";
-            cityId = "";
-            company = "-";
-            companyId = "";
-        }
-        std::string city;
-        std::string cityId;
-        std::string company;
-        std::string companyId;
-        MSGPACK_DEFINE(city, cityId, company, companyId);
-    } destination;
-
-    MSGPACK_DEFINE(game, onJob, delivered, drivenKm, fuelConsumed, income, trailer, cargo, source, destination);
+    MSGPACK_DEFINE(game, status, distance, fuelConsumed, maxSpeed, income, trailer, cargo, source, destination);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
@@ -190,29 +217,30 @@ struct job_t {
         }
 
         root["game"] = game_name;
-        root["onJob"] = onJob;
-        root["delivered"] = delivered;
-        root["distanceDriven"] = drivenKm;
-        root["fuelConsumed"] = fuelConsumed;
+        root["status"] = (uint8_t)status;
         root["income"] = Json::Value::UInt64(income);
-        root["trailerDamage"] = trailer.damage;
-        root["cargoName"] = cargo.name;
-        root["cargoId"] = cargo.id;
-        root["cargoMass"] = cargo.mass;
-        root["sourceCity"] = source.city;
-        root["sourceCityId"] = source.cityId;
-        root["sourceCompany"] = source.company;
-        root["sourceCompanyId"] = source.companyId;
-        root["destinationCity"] = destination.city;
-        root["destinationCityId"] = destination.cityId;
-        root["destinationCompany"] = destination.company;
-        root["destinationCompanyId"] = destination.companyId;
+        root["maxSpeed"] = maxSpeed;
+        root["fuelConsumed"] = fuelConsumed;
+
+        Json::Value distanceObj;
+        distanceObj["driven"] = distance.driven;
+        distanceObj["planned"] = distance.planned;
+        root["distance"] = distanceObj;
+
+        Json::Value cargoObj;
+        cargoObj["name"] = cargo.name;
+        cargoObj["id"] = cargo.id;
+        cargoObj["mass"] = cargo.mass;
+        cargoObj["damage"] = cargo.damage;
+        root["cargo"] = cargoObj;
+
+        root["source"] = Json::Value();
+        source.Serialize(root["source"]);
+
+        root["destination"] = Json::Value();
+        destination.Serialize(root["destination"]);
     }
 #endif
 };
-
-static bool operator==(job_t const &lhs, job_t const &rhs) {
-    return lhs.onJob == rhs.onJob;
-}
 
 #endif //ETS2_JOB_LOGGER_PLUGINDEFS_H

@@ -121,6 +121,8 @@ private:
     JobSender *m_sender;
     Settings *m_settings;
     job_t m_job;
+    float m_odometerOnStart;
+    float m_fuelOnStart;
 
     bool m_socket_running;
     std::mutex m_socket_lock;

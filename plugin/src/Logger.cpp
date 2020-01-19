@@ -21,6 +21,7 @@
 #include <cmath>
 #include <msgpack.hpp>
 #include <scs/common/scssdk_telemetry_common_configs.h>
+#include <scs/common/scssdk_telemetry_common_gameplay_events.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <memoryapi.h>
@@ -29,10 +30,10 @@
 
 Logger::Logger(const Game &game) :
 m_game(game),
-m_last_sent(0),
-m_truck(),
+m_paused(true),
 m_job(game),
-m_odometerOnStart(-1.f)
+m_truck(),
+m_truckLastSent(std::chrono::steady_clock::now())
 {
     m_server.clear_access_channels(websocketpp::log::alevel::all);
     m_server.clear_error_channels(websocketpp::log::alevel::all);
@@ -69,54 +70,49 @@ void Logger::stop() {
 }
 
 SCSAPI_VOID Logger::odometer(const scs_value_t *const km) {
-    m_truck.odometer = km ? km->value_float.value : -1.f;
-
-    if (m_job.onJob && (m_odometerOnStart < 0.f)) {
-        m_odometerOnStart = m_truck.odometer;
-    }
-
-    if (m_job.onJob && !m_job.delivered) {
-        m_job.drivenKm = (m_truck.odometer - m_odometerOnStart);
-    }
+    m_truck.odometer = km ? km->value_float.value : 0.f;
 }
 
 SCSAPI_VOID Logger::fuel(const scs_value_t *const liters) {
-    float fuel = liters ? liters->value_float.value : -1.f;
+    m_truck.fuel = liters ? liters->value_float.value : 0.f;
+}
 
-    if (m_odometerOnStart < 0.f) {
-        m_truck.fuel = fuel;
-        return;
-    }
+SCSAPI_VOID Logger::speed(const scs_value_t *const speed) {
+    m_truck.speed = speed->value_float.value;
+}
 
-    if (m_job.onJob && !m_job.delivered) {
-        if (fuel < m_truck.fuel) {
-            m_job.fuelConsumed += std::fabs(m_truck.fuel - fuel);
-        }
-    }
-    m_truck.fuel = fuel;
+SCSAPI_VOID Logger::truckPlacement(const scs_value_t *const placement) {
+    scs_value_dvector_t position = placement->value_dplacement.position;
+    m_truck.x = position.x;
+    m_truck.y = position.y;
+    m_truck.z = position.z;
+
+    scs_value_euler_t orientation = placement->value_dplacement.orientation;
+    m_truck.heading = orientation.heading;
 }
 
 SCSAPI_VOID Logger::trailerConnected(const scs_value_t *const connected) {
-    m_job.trailer.connected = connected ? connected->value_bool.value : false;
+    m_job.trailer.connected = connected->value_bool.value;
 }
 
-SCSAPI_VOID Logger::trailerDamage(const scs_value_t *const damage) {
-    m_job.trailer.damage = damage ? (damage->value_float.value * 100.f) : 0.f;
-}
-
-SCSAPI_VOID Logger::frameStart(const scs_telemetry_frame_start_t *event_info) {
-    scs_timestamp_t timestamp = event_info->paused_simulation_time;
-
-    if (event_info->flags == SCS_TELEMETRY_FRAME_START_FLAG_timer_restart) {
-        m_last_sent = 1000000;
-    }
-
-    if (!m_job.onJob || ((timestamp - m_last_sent) < 1000000)) {
+SCSAPI_VOID Logger::frameEnd(const void *const /*event_info*/) {
+    if (m_paused) {
         return;
     }
 
-    send_job_partial();
-    m_last_sent = timestamp;
+    auto now = std::chrono::steady_clock::now();
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - m_truckLastSent).count() >= 1000) {
+        send_truck_info();
+        m_truckLastSent = now;
+    }
+}
+
+SCSAPI_VOID Logger::eventPaused(const void *const /*event_info*/) {
+    m_paused = true;
+}
+
+SCSAPI_VOID Logger::eventStarted(const void *const /*event_info*/) {
+    m_paused = false;
 }
 
 SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_info) {
@@ -139,51 +135,70 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
                 m_job.cargo.mass = attr->value.value_float.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city) {
-                m_job.source.city = attr->value.value_string.value;
+                m_job.source.city.name = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city_id) {
-                m_job.source.cityId = attr->value.value_string.value;
+                m_job.source.city.id = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city) {
-                m_job.destination.city = attr->value.value_string.value;
+                m_job.destination.city.name = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city_id) {
-                m_job.destination.cityId = attr->value.value_string.value;
+                m_job.destination.city.id = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company) {
-                m_job.source.company = attr->value.value_string.value;
+                m_job.source.company.name = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company_id) {
-                m_job.source.companyId = attr->value.value_string.value;
+                m_job.source.company.id = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company) {
-                m_job.destination.company = attr->value.value_string.value;
+                m_job.destination.company.name = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company_id) {
-                m_job.destination.companyId = attr->value.value_string.value;
+                m_job.destination.company.id = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_income) {
                 m_job.income = attr->value.value_u64.value;
                 found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_planned_distance_km) {
+                m_job.distance.planned = attr->value.value_u32.value;
+                found++;
             }
         }
 
-        bool onJob = (found == 12);
-        if (m_job.onJob && onJob) {
-            m_odometerOnStart = -1.f;
-            m_truck.fuel = -1.f;
-            m_job.drivenKm = 0.f;
-            m_job.fuelConsumed = 0.f;
+        bool onJob = (found == 13);
+        if (onJob && m_job.status == JobStatus::FreeAsWind) {
+            m_job.status = JobStatus::OnJob;
+            send_job();
         }
-        m_job.onJob = onJob;
-        m_job.delivered = (found == 0);
+    }
+}
 
+SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
+    std::string event_id(event_info->id);
+
+    if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled) {
+        m_job.status = JobStatus::Cancelled;
+    } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) {
+        m_job.status = JobStatus::Delivered;
+    } else if (event_id != SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) {
+        return;
+    }
+
+    for (auto attr = event_info->attributes; attr->name; attr++) {
+        std::string name(attr->name);
+
+        if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cargo_damage) {
+            m_job.cargo.damage = attr->value.value_float.value;
+        } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_distance_km) {
+            m_job.distance.driven = attr->value.value_float.value;
+        }
+    }
+
+    if (m_job.status != JobStatus::FreeAsWind && m_job.status != JobStatus::OnJob) {
         send_job();
-
-        if (m_job.delivered) {
-            m_job = job_t(m_game);
-            m_odometerOnStart = -1.f;
-        }
+        m_job = job_t(m_game);
     }
 }
 
@@ -211,12 +226,12 @@ void Logger::send_job() {
     send(buffer.str());
 }
 
-void Logger::send_job_partial() {
+void Logger::send_truck_info() {
     LockGuard lock(m_lock);
 
     std::stringstream buffer;
-    msgpack::pack(buffer, PacketType::JobPartial);
-    msgpack::pack(buffer, job_partial_t(m_job.drivenKm, m_job.fuelConsumed, m_job.trailer.damage));
+    msgpack::pack(buffer, PacketType::Truck);
+    msgpack::pack(buffer, m_truck);
 
     send(buffer.str());
 }

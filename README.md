@@ -20,46 +20,83 @@ Applications stores job information in memory until it's sent to your API. If
 sending failed, eg. your API did not return expected HTTP code, applications
 tries to send it again later until it's sent successfully.
 
-## JSON Format
+## API Documentation
 
-Below is an example of JSON format sent to API when user takes a job or when
-user finishes the job.
+Current version `v1`.
+
+### URL
+
+Differents payload will be sent with `POST` request to
+`<API_URL>/<API_VERSION>/<MESSAGE>`. In rest of this document `<API_URL>` will
+refer to URL of `<API_URL>/<API_VERSION>`.
+
+API is being expected to response with HTTP code `200` on succes.
+
+### Job
+
+Jobs will be sent to API to `<API_URL>/job` when user takes a job or cancels
+or delivers it.
+
+Below is an example of JSON format for a job.
 
 ```
 {
     "game": "ets2",               // Game type (ets2, ats)
-    "onJob": true,
-    "delivered": false,
-    "distanceDriven": 10.0,       // Kilometers
-    "fuelConsumed": 8.2,          // Liters
-    "income": 6878                // In game specific units (€, $)
-    "trailerDamage": 0.0,         // Percentage (eg. 10.0 = 10%)
-    "cargoName": "Office Paper",
-    "cargoId": "paper",
-    "cargoMass": 18000.0,         // Kilograms
-    "sourceCity": "Tampere",
-    "sourceCityId": "tampere",
-    "sourceCompany": "Viljo Paperitehdas Oy",
-    "sourceCompanyId": "viljo_paper",
-    "destinationCity": "Helsinki",
-    "destinationCityId": "helsinki",
-    "destinationCompany": "Container Port",
-    "destinationCompanyId": "cont_port"
+    "status": 1,                  // 0 = FreeAsWind, 1 = OnJob, 2 = Cancelled, 3 = Delivered
+    "income": 6878,               // In game specific units (€, $)
+    "maxSpeed": 0.0,              // Maximum  speed during the delivery (can be negative)
+    "fuelConsumed": 0.0,          // Liters
+    "distance": {
+        "driven": 0.0,            // Kilometers
+        "planned": 248            // Planned trip distance kilometers
+    },
+    "cargo": {
+        "id": "paper",
+        "name": "Office Paper",
+        "mass": 18000.0           // Kilograms
+        "damage": 0.0,            // Percentage (e.g. 10.0 = 10%)
+    },
+    "source": {
+        "city": {
+            "id": "tampere",
+            "name": "Tampere"
+        },
+        "company": {
+            "id": "viljo_paper",
+            "name": "Viljo Paperitehdas Oy"
+        }
+    },
+    "destination": {
+        "city": {
+            "id": "helsinki",
+            "name": "Helsinki"
+        },
+        "company": {
+            "id": "cont_port",
+            "name": "Container Port"
+        }
+    }
 }
+
 ```
 
-**API:**
+### Truck
 
-Payload will be sent with `POST` request to `<API_URL>/job`. Expected response
-code is `200`.
+Trucks positional data will be sent to `<API_URL>/truck` once in a second only
+if game is not paused.
 
-**User takes a job:**
+Below is an example of JSON format for a truck positional data.
 
-`onJob` will be `true` and `delivered` will be `false`.
+```
+{
+    "speed": 0.0,
+    "heading": 0.723,
+    "x": 34496.559,
+    "y": 11.938,
+    "z": -61094.948
+}
 
-**User finished the job:**
-
-`onJob` will be `false` and `delivered` will be `true`.
+```
 
 ## Building
 

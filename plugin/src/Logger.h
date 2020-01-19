@@ -66,6 +66,20 @@ public:
     SCSAPI_VOID fuel(const scs_value_t *const liters);
 
     /**
+     * Truck speed callback
+     *
+     * @param speed
+     */
+    SCSAPI_VOID speed(const scs_value_t *const speed);
+
+    /**
+     * Truck placement callback
+     *
+     * @param placement
+     */
+    SCSAPI_VOID truckPlacement(const scs_value_t *const placement);
+
+    /**
      * Trailer connected callback
      *
      * @param connected
@@ -73,18 +87,25 @@ public:
     SCSAPI_VOID trailerConnected(const scs_value_t *const connected);
 
     /**
-     * Trailer damage callback
-     *
-     * @param damage
-     */
-    SCSAPI_VOID trailerDamage(const scs_value_t *const damage);
-
-    /**
-     * Frame start callback
+     * Frame end callback
      *
      * @param event_info
      */
-    SCSAPI_VOID frameStart(const scs_telemetry_frame_start_t *event_info);
+    SCSAPI_VOID frameEnd(const void *const event_info);
+
+    /**
+     * Telemetry paused callback
+     *
+     * @param event_info
+     */
+    SCSAPI_VOID eventPaused(const void *const event_info);
+
+    /**
+     * Telemetry started callback
+     *
+     * @param event_info
+     */
+    SCSAPI_VOID eventStarted(const void *const event_info);
 
     /**
      * Configuration callback
@@ -92,6 +113,14 @@ public:
      * @param event_info
      */
     SCSAPI_VOID configuration(const scs_telemetry_configuration_t *event_info);
+
+    /**
+     * Gameplay callback
+     *
+     * @param event_info
+     */
+    SCSAPI_VOID gameplay(const scs_telemetry_gameplay_event_t *event_info);
+
 private:
     /**
      * Websocket server mainloop
@@ -109,9 +138,9 @@ private:
     void send_job();
 
     /**
-     * Send partial job information
+     * Send truck information
      */
-    void send_job_partial();
+    void send_truck_info();
 
     /**
      * Send data via websocket
@@ -141,10 +170,11 @@ private:
     std::set<websocketpp::connection_hdl,std::owner_less<websocketpp::connection_hdl>> m_connections;
 
     Game m_game;
-    std::time_t m_last_sent;
-    truck_t m_truck;
+    bool m_paused;
     job_t m_job;
-    float m_odometerOnStart;
+    truck_t m_truck;
+
+    std::chrono::steady_clock::time_point m_truckLastSent;
 };
 
 

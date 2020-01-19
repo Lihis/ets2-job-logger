@@ -32,6 +32,8 @@ base::MainWindow(nullptr),
 m_sender(nullptr),
 m_settings(settings),
 m_job(Game::Unknown),
+m_odometerOnStart(-1.f),
+m_fuelOnStart(-1.f),
 m_socket_running(false)
 {
     m_client.clear_access_channels(websocketpp::log::alevel::all);
@@ -66,26 +68,27 @@ void MainWindow::on_job_update(wxCommandEvent &event) {
 
     if (type == PacketType::Job) {
         m_lblCargo->SetLabel(wxString::FromUTF8(m_job.cargo.name.c_str()));
-        if (m_job.source.city != "-") {
-            wxString origin(wxString::FromUTF8(m_job.source.city.c_str()));
-            wxString sender(wxString::FromUTF8(m_job.source.company.c_str()));
+        if (m_job.status != JobStatus::FreeAsWind) {
+            wxString origin(wxString::FromUTF8(m_job.source.city.name.c_str()));
+            wxString sender(wxString::FromUTF8(m_job.source.company.name.c_str()));
             m_lblOrigin->SetLabel(origin + " (" + sender + ")");
-        } else {
-            m_lblOrigin->SetLabel("-");
-        }
-        if (m_job.destination.city != "-") {
-            wxString destination(wxString::FromUTF8(m_job.destination.city.c_str()));
-            wxString receiver(wxString::FromUTF8(m_job.destination.company.c_str()));
+
+            wxString destination(wxString::FromUTF8(m_job.destination.city.name.c_str()));
+            wxString receiver(wxString::FromUTF8(m_job.destination.company.name.c_str()));
             m_lblDestination->SetLabel(destination + " (" + receiver + ")");
         } else {
+            m_lblOrigin->SetLabel("-");
             m_lblDestination->SetLabel("-");
         }
         m_lblMass->SetLabel(std::to_string(static_cast<uint32_t>(m_job.cargo.mass / 1000)) + " T");
         m_lblIncome->SetLabel(wxString(std::to_string(m_job.income)).append(L" €"));
+        m_lblCargoDamage->SetLabel(std::to_string(static_cast<uint32_t>(m_job.cargo.damage)) + " %");
     }
-    m_lblTrailerDamage->SetLabel(std::to_string(static_cast<uint32_t>(m_job.trailer.damage)) + " %");
-    m_lblDistanceDriven->SetLabel(std::to_string(static_cast<uint32_t>(m_job.drivenKm)) + " KM");
-    m_lblFuelConsumed->SetLabel(std::to_string(static_cast<uint32_t>(m_job.fuelConsumed)) + " L");
+
+    if (type == PacketType::Job || type == PacketType::Truck) {
+        m_lblDistanceDriven->SetLabel(std::to_string(static_cast<uint32_t>(m_job.distance.driven)) + " KM");
+        m_lblFuelConsumed->SetLabel(std::to_string(static_cast<uint32_t>(m_job.fuelConsumed)) + " L");
+    }
 }
 
 void MainWindow::on_sender_update(wxThreadEvent &event) {
@@ -220,19 +223,43 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
     const auto &obj = oh.get();
 
     if (packetType == PacketType::Job) {
+        float maxSpeed = m_job.maxSpeed;
+        float fuelConsumed = m_job.fuelConsumed;
+
         m_job = obj.as<job_t>();
-        if (m_job.source.city != "-" && m_job.destination.city != "-") {
+
+        if (m_job.status != JobStatus::FreeAsWind) {
+            m_job.maxSpeed = maxSpeed;
+            m_job.fuelConsumed = fuelConsumed;
             m_sender->send(m_job);
         }
 
-        if (m_job.delivered) {
+        if (m_job.status == JobStatus::Cancelled || m_job.status == JobStatus::Delivered) {
             m_job = job_t(m_job.game);
+            m_odometerOnStart = -1.f;
+            m_fuelOnStart = -1.f;
         }
-    } else if (packetType == PacketType::JobPartial) {
-        job_partial_t jobPartial = obj.as<job_partial_t>();
-        m_job.drivenKm = jobPartial.drivenKm;
-        m_job.fuelConsumed = jobPartial.fuelConsumed;
-        m_job.trailer.damage = jobPartial.trailerDamage;
+    } else if (packetType == PacketType::Truck) {
+        truck_t truck = obj.as<truck_t>();
+
+        if (m_job.status == JobStatus::OnJob) {
+            if (truck.odometer >= 0.f && m_odometerOnStart > -0.9f) {
+                m_job.distance.driven = (truck.odometer - m_odometerOnStart);
+            } else if (truck.odometer >= 0.f && m_odometerOnStart < 0.f) {
+                m_odometerOnStart = truck.odometer;
+            }
+
+            if (truck.fuel >= 0.f && m_fuelOnStart > -0.9f) {
+                m_job.fuelConsumed = (m_fuelOnStart - truck.fuel);
+            } else if (truck.fuel >= 0.f && m_fuelOnStart < 0.f) {
+                m_fuelOnStart = truck.fuel;
+            }
+
+            if (std::abs(truck.speed) > std::abs(m_job.maxSpeed)) {
+                m_job.maxSpeed = truck.speed;
+            }
+        }
+        m_sender->send(truck);
     } else if (packetType == PacketType::Version) {
         version_t version = obj.as<version_t>();
         // FIXME: Show error of mismatching plugin version
