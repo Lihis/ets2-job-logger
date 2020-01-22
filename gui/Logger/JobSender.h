@@ -103,6 +103,19 @@ private:
      */
     void send_truck();
 
+#ifdef _WIN32
+
+    /**
+     * Add certificates from system store
+     *
+     * @param curl
+     * @param sslctx
+     * @param userdata
+     * @return int - CURLE_OK
+     */
+    static int add_certificates(void *curl, void *sslctx, void *userdata);
+#endif
+
     /**
      * Wrapper to send data to the API
      *

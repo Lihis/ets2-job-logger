@@ -21,6 +21,13 @@
 #include <wx/time.h>
 #include <curl/curl.h>
 #include <sstream>
+#ifdef _WIN32
+#include <wincrypt.h>
+#include <windows.h>
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
+#endif
 
 #define API_VERSION "v1"
 
@@ -176,6 +183,32 @@ void JobSender::send_truck() {
     m_sending = false;
 }
 
+#ifdef _WIN32
+int JobSender::add_certificates(void *curl, void *sslctx, void *userdata) {
+    std::vector<std::wstring> stores = {std::wstring(L"CA"), std::wstring(L"AuthRoot"), std::wstring(L"ROOT")};
+    auto certStore = SSL_CTX_get_cert_store(reinterpret_cast<SSL_CTX *>(sslctx));
+
+    for (const auto& store : stores) {
+        HCERTSTORE storeHandle = CertOpenSystemStore(NULL, store.c_str());
+        if (!storeHandle) {
+            continue;
+        }
+
+        PCCERT_CONTEXT windowsCertificate = CertEnumCertificatesInStore(storeHandle, nullptr);
+        while (windowsCertificate != nullptr) {
+            X509 *opensslCertificate = d2i_X509(nullptr, const_cast<unsigned char const **>(&windowsCertificate->pbCertEncoded), windowsCertificate->cbCertEncoded);
+            if (opensslCertificate) {
+                X509_STORE_add_cert(certStore, opensslCertificate);
+            }
+            windowsCertificate = CertEnumCertificatesInStore(storeHandle, windowsCertificate);
+        }
+        CertCloseStore(storeHandle, 0);
+    }
+
+    return CURLE_OK;
+}
+#endif
+
 bool JobSender::send_data(const std::string &url, const char *data, wxString &error) {
     bool ret = false;
     CURL *curl;
@@ -196,6 +229,9 @@ bool JobSender::send_data(const std::string &url, const char *data, wxString &er
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30L);
+#ifdef _WIN32
+    curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, add_certificates);
+#endif
 
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
