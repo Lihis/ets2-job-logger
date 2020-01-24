@@ -78,10 +78,14 @@ SCSAPI_VOID Logger::fuel(const scs_value_t *const liters) {
 }
 
 SCSAPI_VOID Logger::speed(const scs_value_t *const speed) {
-    m_truck.speed = speed->value_float.value;
+    m_truck.speed = speed ? speed->value_float.value : 0.f;
 }
 
 SCSAPI_VOID Logger::truckPlacement(const scs_value_t *const placement) {
+    if (!placement) {
+        return;
+    }
+
     scs_value_dvector_t position = placement->value_dplacement.position;
     m_truck.x = position.x;
     m_truck.y = position.y;
@@ -92,7 +96,7 @@ SCSAPI_VOID Logger::truckPlacement(const scs_value_t *const placement) {
 }
 
 SCSAPI_VOID Logger::trailerConnected(const scs_value_t *const connected) {
-    m_job.trailer.connected = connected->value_bool.value;
+    m_job.trailer.connected = connected ? connected->value_bool.value : false;
 }
 
 SCSAPI_VOID Logger::frameEnd(const void *const /*event_info*/) {
