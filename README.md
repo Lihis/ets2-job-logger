@@ -26,16 +26,27 @@ Current version `v1`.
 
 ### URL
 
-Differents payload will be sent with `POST` request to
-`<API_URL>/<API_VERSION>/<MESSAGE>`. In rest of this document `<API_URL>` will
-refer to URL of `<API_URL>/<API_VERSION>`.
+Payloads will be sent with `POST` request to URL in form of
+`<API_URL>/<API_VERSION>/<MSG_TYPE>`. For example `https://example.com/api/v1/job`.
 
-API is being expected to response with HTTP code `200` on succes.
+`<API_URL>` is set by an user in the application settings (i.e. `API URL`).
+Users should be guided to set `API URL` to point to your API and it should
+not include the version, for example `https://example.com/api/`.
+
+`<API_VERSION>` is automatically appended to the configured `API URL`, see
+current version from above.
+
+`<MSG_TYPE>` refers to the different messages documented below.
+
+In the rest of this document `<API_URL>` refers to `<API_URL>/<API_VERSION>`.
 
 ### Job
 
-Jobs will be sent to API to `<API_URL>/job` when user takes a job or cancels
-or delivers it.
+Jobs will be sent to `<API_URL>/job` when user takes a job or cancels or
+delivers it.
+
+Expected HTTP response code `200`. Otherwise payload sending will be retried
+in 30 seconds intervals until API responds with HTTP code `200`.
 
 Below is an example of JSON format for a job.
 
@@ -54,7 +65,7 @@ Below is an example of JSON format for a job.
         "id": "paper",
         "name": "Office Paper",
         "mass": 18000.0           // Kilograms
-        "damage": 0.0,            // Percentage (e.g. 10.0 = 10%)
+        "damage": 0.0,            // Percentage (e.g. 0.01 = 1%)
     },
     "source": {
         "city": {
@@ -77,13 +88,14 @@ Below is an example of JSON format for a job.
         }
     }
 }
-
 ```
 
 ### Truck
 
 Trucks positional data will be sent to `<API_URL>/truck` once in a second only
 if game is not paused.
+
+Response code is ignored; payload is only sent once.
 
 Below is an example of JSON format for a truck positional data.
 
@@ -95,7 +107,6 @@ Below is an example of JSON format for a truck positional data.
     "y": 11.938,
     "z": -61094.948
 }
-
 ```
 
 ## Building
