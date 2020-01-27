@@ -31,6 +31,9 @@
 #include <jobplugin/PluginDefs.h>
 #include <wx/event.h>
 #include <wx/thread.h>
+#ifdef _WIN32
+#include <openssl/x509.h>
+#endif
 
 class JobSender : public wxThreadHelper {
 public:
@@ -135,6 +138,10 @@ private:
     bool m_sending;
     std::vector<job_t> m_job_queue;
     std::deque<truck_t> m_truck_queue;
+
+#ifdef _WIN32
+    std::vector<X509*> m_certificates;
+#endif
 };
 
 #endif //ETS2_JOB_LOGGER_JOBSENDER_H

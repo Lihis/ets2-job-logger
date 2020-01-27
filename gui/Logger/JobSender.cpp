@@ -25,7 +25,6 @@
 #include <wincrypt.h>
 #include <windows.h>
 #include <openssl/ssl.h>
-#include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
 #endif
 
@@ -38,6 +37,27 @@ m_running(false),
 m_sending(false)
 {
     curl_global_init(CURL_GLOBAL_ALL);
+
+#ifdef _WIN32
+    std::vector<std::wstring> stores = {std::wstring(L"CA"), std::wstring(L"AuthRoot"), std::wstring(L"ROOT")};
+
+    for (const auto& store : stores) {
+        HCERTSTORE storeHandle = CertOpenSystemStore(NULL, store.c_str());
+        if (!storeHandle) {
+            continue;
+        }
+
+        PCCERT_CONTEXT windowsCertificate = CertEnumCertificatesInStore(storeHandle, nullptr);
+        while (windowsCertificate != nullptr) {
+            X509 *opensslCertificate = d2i_X509(nullptr, const_cast<unsigned char const **>(&windowsCertificate->pbCertEncoded), windowsCertificate->cbCertEncoded);
+            if (opensslCertificate) {
+                m_certificates.push_back(opensslCertificate);
+            }
+            windowsCertificate = CertEnumCertificatesInStore(storeHandle, windowsCertificate);
+        }
+        CertCloseStore(storeHandle, 0);
+    }
+#endif
 }
 
 JobSender::~JobSender() {
@@ -185,24 +205,11 @@ void JobSender::send_truck() {
 
 #ifdef _WIN32
 int JobSender::add_certificates(void *curl, void *sslctx, void *userdata) {
-    std::vector<std::wstring> stores = {std::wstring(L"CA"), std::wstring(L"AuthRoot"), std::wstring(L"ROOT")};
     auto certStore = SSL_CTX_get_cert_store(reinterpret_cast<SSL_CTX *>(sslctx));
+    auto obj = static_cast<JobSender *>(userdata);
 
-    for (const auto& store : stores) {
-        HCERTSTORE storeHandle = CertOpenSystemStore(NULL, store.c_str());
-        if (!storeHandle) {
-            continue;
-        }
-
-        PCCERT_CONTEXT windowsCertificate = CertEnumCertificatesInStore(storeHandle, nullptr);
-        while (windowsCertificate != nullptr) {
-            X509 *opensslCertificate = d2i_X509(nullptr, const_cast<unsigned char const **>(&windowsCertificate->pbCertEncoded), windowsCertificate->cbCertEncoded);
-            if (opensslCertificate) {
-                X509_STORE_add_cert(certStore, opensslCertificate);
-            }
-            windowsCertificate = CertEnumCertificatesInStore(storeHandle, windowsCertificate);
-        }
-        CertCloseStore(storeHandle, 0);
+    for (const auto cert : obj->m_certificates) {
+        X509_STORE_add_cert(certStore, cert);
     }
 
     return CURLE_OK;
@@ -230,6 +237,7 @@ bool JobSender::send_data(const std::string &url, const char *data, wxString &er
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30L);
 #ifdef _WIN32
+    curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, (void *)this);
     curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, add_certificates);
 #endif
 
