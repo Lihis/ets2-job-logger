@@ -124,7 +124,7 @@ wxString Settings::getConfigFile() const {
     if (path.empty()) {
         return "";
     } else {
-        path += wxFileName::GetPathSeparator() +  wxString("ets2-telemetry-server");
+        path += wxFileName::GetPathSeparator() +  wxString("ets2-job-logger");
     }
 
     return path + wxFileName::GetPathSeparator() + wxString("config.ini");
