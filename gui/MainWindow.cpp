@@ -82,7 +82,14 @@ void MainWindow::on_job_update(wxCommandEvent &event) {
         }
         m_lblMass->SetLabel(std::to_string(static_cast<uint32_t>(m_job.cargo.mass / 1000)) + " T");
         m_lblIncome->SetLabel(wxString(std::to_string(m_job.income)).append(L" €"));
-        m_lblCargoDamage->SetLabel(std::to_string(static_cast<uint32_t>(m_job.cargo.damage)) + " %");
+    }
+
+    if (type == PacketType::Job || type == PacketType::CargoDamage) {
+        // TODO: Game seems to "forgive" damage if it's under 1%?
+        std::stringstream damage;
+        damage.precision(1);
+        damage << std::fixed << (m_job.cargo.damage * 100.f);
+        m_lblCargoDamage->SetLabel(damage.str() + " %");
     }
 
     if (type == PacketType::Job || type == PacketType::Truck) {
@@ -266,6 +273,8 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
         if (version.major != PLUGIN_VERSION_MAJOR && version.minor != PLUGIN_VERSION_MINOR) {
             m_client.close(hdl, websocketpp::close::status::unsupported_data, "");
         }
+    } else if (packetType == PacketType::CargoDamage) {
+        m_job.cargo.damage = obj.as<float>();
     } else if (packetType == PacketType::Unknown) {
         return;
     }

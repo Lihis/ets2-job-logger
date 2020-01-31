@@ -87,6 +87,17 @@ public:
     SCSAPI_VOID trailerConnected(const scs_value_t *const connected);
 
     /**
+     * Cargo damage callback
+     *
+     * Damage is not actually updated in job_t structure as it will be received
+     * anyway when job has been delivered or cancelled. Damage is only sent to
+     * the GUI for display purposes.
+     *
+     * @param damage
+     */
+    SCSAPI_VOID cargoDamage(const scs_value_t *const damage);
+
+    /**
      * Frame end callback
      *
      * @param event_info

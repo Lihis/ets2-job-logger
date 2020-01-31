@@ -29,6 +29,7 @@
 #include <scs/scssdk_telemetry.h>
 #include <scs/common/scssdk_telemetry_truck_common_channels.h>
 #include <scs/common/scssdk_telemetry_trailer_common_channels.h>
+#include <scs/common/scssdk_telemetry_job_common_channels.h>
 #include <scs/amtrucks/scssdk_ats.h>
 #include <scs/eurotrucks2/scssdk_eut2.h>
 
@@ -45,6 +46,7 @@ callback_channel_t fuel_cb;
 callback_channel_t speed_cb;
 callback_channel_t truckPlacement_cb;
 callback_channel_t trailerConnected_cb;
+callback_channel_t cargoDamage_cb;
 callback_event_t frameEnd_cb;
 callback_event_t eventPaused_cb;
 callback_event_t eventStarted_cb;
@@ -133,6 +135,9 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 
     trailerConnected_cb = cb::bind::channel(&Logger::trailerConnected, logger);
     init_params->register_for_channel(SCS_TELEMETRY_TRAILER_CHANNEL_connected, SCS_U32_NIL, SCS_VALUE_TYPE_bool, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&trailerConnected_cb);
+
+    cargoDamage_cb = cb::bind::channel(&Logger::cargoDamage, logger);
+    init_params->register_for_channel(SCS_TELEMETRY_JOB_CHANNEL_cargo_damage, SCS_U32_NIL, SCS_VALUE_TYPE_float, SCS_TELEMETRY_CHANNEL_FLAG_no_value, callback_channel, (void *)&cargoDamage_cb);
 
     frameEnd_cb = cb::bind::event(&Logger::frameEnd, logger);
     init_params->register_for_event(SCS_TELEMETRY_EVENT_frame_end, callback_event, (void *)&frameEnd_cb);

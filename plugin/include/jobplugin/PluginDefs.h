@@ -41,7 +41,8 @@ enum class PacketType {
     Unknown = 0,
     Version = 1,
     Job = 2,
-    Truck = 3
+    Truck = 3,
+    CargoDamage = 4
 };
 MSGPACK_ADD_ENUM(PacketType)
 

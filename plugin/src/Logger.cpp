@@ -99,6 +99,19 @@ SCSAPI_VOID Logger::trailerConnected(const scs_value_t *const connected) {
     m_job.trailer.connected = connected ? connected->value_bool.value : false;
 }
 
+SCSAPI_VOID Logger::cargoDamage(const scs_value_t *const damage) {
+    float prev = m_job.cargo.damage;
+    float cur = damage ? damage->value_float.value : 0.f;
+    auto epsilon = std::numeric_limits<float>::epsilon();
+
+    if (std::fabs(prev - cur) > epsilon * std::max(std::fabs(prev), std::fabs(cur))) {
+        std::stringstream buffer;
+        msgpack::pack(buffer, PacketType::CargoDamage);
+        msgpack::pack(buffer, cur);
+        send(buffer.str());
+    }
+}
+
 SCSAPI_VOID Logger::frameEnd(const void *const /*event_info*/) {
     if (m_paused) {
         return;
