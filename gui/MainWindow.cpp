@@ -81,7 +81,7 @@ void MainWindow::on_job_update(wxCommandEvent &event) {
             m_lblDestination->SetLabel("-");
         }
         m_lblMass->SetLabel(std::to_string(static_cast<uint32_t>(m_job.cargo.mass / 1000)) + " T");
-        m_lblIncome->SetLabel(wxString(std::to_string(m_job.income)).append(L" €"));
+        m_lblIncome->SetLabel(wxString(std::to_string(m_job.income)).append(wxString::FromUTF8(" €")));
     }
 
     if (type == PacketType::Job || type == PacketType::CargoDamage) {
@@ -128,7 +128,7 @@ void MainWindow::on_about(wxCommandEvent &event) {
     aboutInfo.SetName("ETS2 Job Logger");
     aboutInfo.SetVersion(APP_VERSION_FULL);
     aboutInfo.SetDescription("Euro Truck Simulator 2 Job Logger");
-    aboutInfo.SetCopyright("(c) Tomi Lähteenmäki 2019");
+    aboutInfo.SetCopyright(wxString::FromUTF8("(c) Tomi Lähteenmäki 2019"));
     aboutInfo.SetLicence("This program is free software; you can redistribute it and/or modify\n"
                          "it under the terms of the GNU General Public License as published by\n"
                          "the Free Software Foundation; either version 2 of the License, or\n"
@@ -144,7 +144,7 @@ void MainWindow::on_about(wxCommandEvent &event) {
                          "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,\n"
                          "MA 02110-1301, USA.");
     aboutInfo.SetWebSite("https://github.com/Lihis/ets2-job-logger", "Website");
-    aboutInfo.AddDeveloper(L"Tomi Lähteenmäki");
+    aboutInfo.AddDeveloper(wxString::FromUTF8("Tomi Lähteenmäki"));
 
     wxAboutBox(aboutInfo, this);
 }
