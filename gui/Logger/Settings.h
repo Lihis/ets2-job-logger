@@ -90,6 +90,35 @@ public:
      */
     wxString GetToken() const;
 
+    /**
+     * Enable/disable start on startup
+     *
+     * @param enabled
+     * @return true if enabled/disabled successfully, false otherwsie
+     */
+    bool SetStartOnStartup(bool enabled);
+
+    /**
+     * Is start on startup enabled
+     *
+     * @return bool - true if enabled, false otherwise
+     */
+    bool GetStartOnStartup() const;
+
+    /**
+     * Enable running in background
+     *
+     * @param enabled
+     */
+    void SetRunInBackground(bool enabled);
+
+    /**
+     * Get run in background
+     *
+     * @return bool - true if enabled, false otherwise
+     */
+    bool GetRunInBackground() const;
+
 protected:
     Settings() = default;
     ~Settings() = default;
@@ -110,6 +139,20 @@ protected:
 
 private:
     /**
+     * Enable start on startup
+     *
+     * @return bool - true if successfully enabled, false otherwise
+     */
+    bool EnableStartOnStartup();
+
+    /**
+     * Disable start on startup
+     *
+     * @return bool true if successfully disabled, false otherwise
+     */
+    bool DisableStartOnStartup();
+
+    /**
      * Get path to configuration file
      *
      * @return
@@ -123,10 +166,15 @@ private:
      */
     wxString getConfigDir() const;
 
+#ifdef __linux__
+    wxString getAutostartDir() const;
+#endif
+
     wxString m_ets2_path;
     wxString m_ats_path;
     wxString m_url;
     wxString m_token;
+    bool m_run_in_background;
 };
 
 #endif //ETS2_JOB_LOGGER_SETTINGS_H

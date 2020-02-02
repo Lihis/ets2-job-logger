@@ -44,6 +44,13 @@ m_settings(settings)
     }
 
     m_textCtrlToken->SetValue(m_settings->GetToken());
+
+    m_checkBoxStartOnStartup->SetValue(m_settings->GetStartOnStartup());
+#ifdef __APPLE__
+#warning "SettingsWindow(): checkbox for startup hidden as enable/disable not implemented"
+    m_checkBoxStartOnStartup->Hide();
+#endif
+    m_checkBoxRunInBackground->SetValue(m_settings->GetRunInBackground());
 }
 
 void SettingsWindow::on_install_ets2(wxCommandEvent &event) {
@@ -95,6 +102,14 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
     } else {
         m_settings->SetToken(m_textCtrlToken->GetValue());
     }
+
+    if (!m_settings->SetStartOnStartup(m_checkBoxStartOnStartup->IsChecked())) {
+        wxString enabled(m_checkBoxStartOnStartup->IsChecked() ? "enable" : "disable");
+        wxMessageBox("Failed to " + enabled + " start on startup", "Error", wxOK, this);
+        return;
+    }
+
+    m_settings->SetRunInBackground(m_checkBoxRunInBackground->IsChecked());
 
     EndDialog(wxID_OK);
 }
