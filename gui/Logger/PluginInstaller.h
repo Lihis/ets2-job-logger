@@ -38,23 +38,41 @@ namespace PluginInstaller {
     };
 
     /**
+     * Test @p path points to valid game path
+     *
+     * @param path
+     * @return bool - true if plugin exists, false otherwise
+     */
+    bool CheckGamePath(const wxString &path);
+
+    /**
      * Check if plugin needs to be updated
      *
      * @param game_path - Path to game directory
      * @param needs_update - Set to true if plugin needs to be updated
      * @param error - Error message
-     * @return - true if no errors encountered, false otherwise
+     * @return bool - true if no errors encountered, false otherwise
      */
-    bool needs_update(const wxString &game_path, bool &needs_update, wxString &error);
+    bool NeedsUpdate(const wxString &game_path, bool &needs_update, wxString &error);
 
     /**
      * Update plugin in game directory
      *
      * @param game_path - Path to game directory
      * @param error - Error message
-     * @return - true if plugin updated successfully, false otherwise
+     * @return bool - true if plugin updated successfully, false otherwise
      */
-    bool update(const wxString &game_path, wxString &error);
+    bool Update(const wxString &game_path, wxString &error);
+
+    /**
+     * Check if plugin needs to be updated and update if needed
+     *
+     * @param game - Name of the game for display in error
+     * @param path - Path to root of game install directory
+     * @param error
+     * @return bool - true on success, false otherwise
+     */
+    bool MaybeUpdate(const wxString &game, const wxString &path, wxString &error);
 }
 
 #endif //ETS2_JOB_LOGGER_PLUGININSTALLER_H

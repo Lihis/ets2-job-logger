@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 #include "Settings.h"
+#include "PluginInstaller.h"
 #include <wx/fileconf.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -118,9 +119,17 @@ bool Settings::SettingsLoad() {
     config->SetPath("miscellaneous");
     m_run_in_background = config->Read("runBackground", true);
 
-    bool plugin_path_ok = (!m_ets2_path.empty() || !m_ats_path.empty());
+    bool pluginPathOk = (!m_ets2_path.empty() || !m_ats_path.empty());
 
-    return (plugin_path_ok && !m_url.empty() && !m_token.empty());
+    if (!m_ets2_path.empty()) {
+        pluginPathOk &= PluginInstaller::CheckGamePath(m_ets2_path);
+    }
+
+    if (!m_ats_path.empty()) {
+        pluginPathOk &= PluginInstaller::CheckGamePath(m_ats_path);
+    }
+
+    return (pluginPathOk && !m_url.empty() && !m_token.empty());
 }
 
 bool Settings::SettingsSave() {

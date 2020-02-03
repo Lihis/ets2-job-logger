@@ -71,20 +71,17 @@ bool Application::OnInit() {
         }
     }
 
-    bool needs_update;
-    wxString error;
-    std::vector<wxString> game_paths = { GetETS2Path(), GetATSPath() };
-    for (const auto &path : game_paths) {
-        if (path.empty()) {
+    std::map<wxString, wxString> games = {  { "ETS2", GetETS2Path() } , { "ATS", GetATSPath() } };
+    for (const auto &game : games) {
+        if (game.second.empty()) {
             continue;
         }
 
-        if (!PluginInstaller::needs_update(path, needs_update, error)) {
+        wxString error;
+        if (!PluginInstaller::MaybeUpdate(game.first, game.second, error)) {
             wxMessageBox(error, "Error", wxOK, nullptr);
-            return false;
-        } else if (needs_update) {
-            if (!PluginInstaller::update(path, error)) {
-                wxMessageBox(error, "Error", wxOK, nullptr);
+            if (ShowSettings() != wxID_OK) {
+                wxMessageBox("Plugin needs to be installed, exiting..", "Error", wxOK, nullptr);
                 return false;
             }
         }

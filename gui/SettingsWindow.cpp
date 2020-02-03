@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 #include "SettingsWindow.h"
+#include "Logger/PluginInstaller.h"
 #include <wx/msgdlg.h>
 
 SettingsWindow::SettingsWindow(Settings *settings, wxWindow *parent) :
@@ -72,6 +73,11 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
             wxMessageBox("Path to ETS2 must be selected.", "Error", wxOK, this);
             return;
         } else {
+            wxString error;
+            if (!PluginInstaller::MaybeUpdate("ETS2", m_dirCtrlETS2Path->GetPath(), error)) {
+                wxMessageBox(error, "Error", wxOK, this);
+                return;
+            }
             m_settings->SetETS2Path(m_dirCtrlETS2Path->GetPath());
         }
     } else {
@@ -83,6 +89,11 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
             wxMessageBox("Path to ATS must be selected.", "Error", wxOK, this);
             return;
         } else {
+            wxString error;
+            if (!PluginInstaller::MaybeUpdate("ATS", m_dirCtrlATSPath->GetPath(), error)) {
+                wxMessageBox(error, "Error", wxOK, this);
+                return;
+            }
             m_settings->SetATSPath(m_dirCtrlATSPath->GetPath());
         }
     } else {
