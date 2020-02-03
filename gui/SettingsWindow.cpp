@@ -31,12 +31,15 @@ m_settings(settings)
     bool install_ats = !m_settings->GetATSPath().empty();
 
     if (!install_ets2 && !install_ats) {
+        m_checkBoxETS2->SetValue(true);
         m_dirCtrlETS2Path->Enable(true);
     } else {
+        m_checkBoxETS2->SetValue(install_ets2);
         m_dirCtrlETS2Path->Enable(install_ets2);
     }
 
     m_dirCtrlETS2Path->SetPath(m_settings->GetETS2Path());
+    m_checkBoxATS->SetValue(install_ats);
     m_dirCtrlATSPath->Enable(install_ats);
     m_dirCtrlATSPath->SetPath(m_settings->GetATSPath());
 
