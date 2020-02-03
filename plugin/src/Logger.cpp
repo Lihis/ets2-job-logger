@@ -187,9 +187,7 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             }
         }
 
-        bool onJob = (found == 13);
-        if (isSpecial)
-            onJob = (found == 9);
+        bool onJob = (found == (isSpecial ? 9 : 13));
         if (onJob && m_job.status == JobStatus::FreeAsWind) {
             m_job.status = JobStatus::OnJob;
             send_job();
