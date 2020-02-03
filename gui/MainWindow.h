@@ -56,6 +56,14 @@ public:
      */
     bool can_close();
 
+    /**
+     * Query server for it's capabilities
+     *
+     * @param error
+     * @return bool - true if query successful, false otherwise
+     */
+    bool check_server_capabilities(wxString &error);
+
 private:
     typedef std::lock_guard<std::mutex> LockGuard;
     typedef websocketpp::client<websocketpp::config::asio_client> WebsocketClient;

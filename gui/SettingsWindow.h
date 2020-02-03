@@ -29,10 +29,11 @@
 
 #include "base/SettingsWindow.h"
 #include "Logger/Settings.h"
+#include "MainWindow.h"
 
 class SettingsWindow : public base::SettingsWindow {
 public:
-    SettingsWindow(Settings *settings, wxWindow *parent);
+    SettingsWindow(Settings *settings, MainWindow *mainWindow);
 
 protected:
     /**
@@ -57,6 +58,7 @@ protected:
 
 private:
     Settings *m_settings;
+    MainWindow *m_mainWindow;
 };
 
 

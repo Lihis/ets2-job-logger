@@ -20,9 +20,10 @@
 #include "SettingsWindow.h"
 #include <wx/msgdlg.h>
 
-SettingsWindow::SettingsWindow(Settings *settings, wxWindow *parent) :
-base::SettingsWindow(parent),
-m_settings(settings)
+SettingsWindow::SettingsWindow(Settings *settings, MainWindow *mainWindow) :
+base::SettingsWindow(mainWindow),
+m_settings(settings),
+m_mainWindow(mainWindow)
 {
     SetReturnCode(wxID_CANCEL);
 
@@ -94,6 +95,11 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
         return;
     } else {
         m_settings->SetURL(m_textCtrlURL->GetValue());
+        wxString error;
+        if (m_mainWindow && !m_mainWindow->check_server_capabilities(error)) {
+            wxMessageBox("Failed to query server capabilities: " + error, "Error", wxOK, this);
+            return;
+        }
     }
 
     if (m_textCtrlToken->GetValue().empty()) {

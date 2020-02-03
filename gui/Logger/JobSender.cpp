@@ -21,6 +21,7 @@
 #include <wx/time.h>
 #include <curl/curl.h>
 #include <sstream>
+#include <json/reader.h>
 #ifdef _WIN32
 #include <wincrypt.h>
 #include <windows.h>
@@ -83,10 +84,33 @@ bool JobSender::start() {
 
 void JobSender::stop() {
     LockGuard lock(m_lock);
-    m_running = false;
-    if (GetThread()->IsRunning()) {
-        GetThread()->Wait();
+    if (m_running) {
+        m_running = false;
+        if (GetThread()->IsRunning()) {
+            GetThread()->Wait();
+        }
     }
+}
+
+bool JobSender::queryCapabilities(wxString &error) {
+    wxString response;
+    std::string url = generate_url("capabilities");
+
+    if (send_data(url, "", response, error) != 200L) {
+        return false;
+    }
+
+    Json::Value json;
+    Json::CharReaderBuilder builder;
+    Json::CharReader *reader = builder.newCharReader();
+    if (!reader->parse(response.c_str(), response.c_str() + response.length(), &json, nullptr)) {
+        error = "invalid JSON";
+        return false;
+    }
+
+    m_caps.truck = json.get("truck", false).asBool();
+
+    return true;
 }
 
 bool JobSender::hasPending() {
@@ -105,8 +129,10 @@ void JobSender::send(const job_t &job) {
 }
 
 void JobSender::send(const truck_t &truck) {
-    LockGuard lock(m_lock);
-    m_truck_queue.push_back(truck);
+    if (m_caps.truck) {
+        LockGuard lock(m_lock);
+        m_truck_queue.push_back(truck);
+    }
 }
 
 wxThread::ExitCode JobSender::Entry() {
@@ -140,7 +166,6 @@ std::string JobSender::generate_url(const std::string &endpoint) {
 }
 
 bool JobSender::send_job() {
-    bool ret;
     {
         LockGuard lock(m_lock);
         if (m_job_queue.empty()) {
@@ -151,6 +176,7 @@ bool JobSender::send_job() {
     job_t job;
     std::string url = generate_url("job");
     Json::Value json;
+    wxString response;
     wxString error;
 
     {
@@ -162,10 +188,10 @@ bool JobSender::send_job() {
 
     job.Serialize(json);
 
-    ret = send_data(url, json.toStyledString().c_str(), error);
-    if (!ret) {
+    long code = send_data(url, json.toStyledString().c_str(), response, error);
+    if (code != 200L) {
         auto event = new wxThreadEvent(wxEVT_COMMAND_THREAD, wxID_ABORT);
-        event->SetString(error);
+        event->SetString("API returned error code: " + std::to_string(code) + " " + error);
         wxQueueEvent(m_handler, event);
         LockGuard lock(m_lock);
         m_job_queue.emplace_back(job);
@@ -176,13 +202,14 @@ bool JobSender::send_job() {
     LockGuard lock(m_lock);
     m_sending = false;
 
-    return ret;
+    return (code == 200L);
 }
 
 void JobSender::send_truck() {
     truck_t truck;
     std::string url = generate_url("truck");
     Json::Value json;
+    wxString response;
     wxString error;
 
     {
@@ -197,14 +224,14 @@ void JobSender::send_truck() {
 
     truck.Serialize(json);
 
-    send_data(url, json.toStyledString().c_str(), error);
+    send_data(url, json.toStyledString().c_str(), response, error);
 
     LockGuard lock(m_lock);
     m_sending = false;
 }
 
 #ifdef _WIN32
-int JobSender::add_certificates(void *curl, void *sslctx, void *userdata) {
+int JobSender::add_certificates(void */*curl*/, void *sslctx, void *userdata) {
     auto certStore = SSL_CTX_get_cert_store(reinterpret_cast<SSL_CTX *>(sslctx));
     auto obj = static_cast<JobSender *>(userdata);
 
@@ -216,10 +243,22 @@ int JobSender::add_certificates(void *curl, void *sslctx, void *userdata) {
 }
 #endif
 
-bool JobSender::send_data(const std::string &url, const char *data, wxString &error) {
-    bool ret = false;
+size_t JobSender::write_callback(void *contents, size_t size, size_t nmemb, void *userdata) {
+    auto buffer = static_cast<wxString *>(userdata);
+    size_t realSize = size * nmemb;
+
+    buffer->append((char*)contents, realSize);
+
+    return realSize;
+}
+
+long JobSender::send_data(const std::string &url, const char *data, wxString &response, wxString &error) {
+    long ret = 0;
     CURL *curl;
     CURLcode res;
+
+    response.clear();
+    error.clear();
 
     curl = curl_easy_init();
     if (!curl) {
@@ -240,20 +279,17 @@ bool JobSender::send_data(const std::string &url, const char *data, wxString &er
     curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, (void *)this);
     curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, add_certificates);
 #endif
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
         ret = false;
         error = curl_easy_strerror(res);
-    } else {
-        long response_code;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-        if (response_code != 200) {
-            ret = false;
-            error = "API returned error code: " + std::to_string(response_code);
-        } else {
-            ret = true;
-        }
+    }
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &ret);
+    if (ret == 500L) {
+        error = "Internal Server Error";
     }
 
     curl_easy_cleanup(curl);

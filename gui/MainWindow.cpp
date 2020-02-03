@@ -123,6 +123,10 @@ bool MainWindow::can_close() {
     return ret;
 }
 
+bool MainWindow::check_server_capabilities(wxString &error) {
+    return m_sender->queryCapabilities(error);
+}
+
 void MainWindow::on_about(wxCommandEvent &event) {
     wxAboutDialogInfo aboutInfo;
     aboutInfo.SetName("ETS2 Job Logger");
@@ -168,7 +172,7 @@ bool MainWindow::start() {
     LockGuard lock(m_socket_lock);
 
     if (!m_sender->start()) {
-        wxMessageBox("Failed to create job sender.", "Error", wxOK, nullptr);
+        wxMessageBox("Failed to create job sender.", "Error", wxOK, this);
         return false;
     }
 
