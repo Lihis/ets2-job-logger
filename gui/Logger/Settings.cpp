@@ -72,7 +72,7 @@ bool Settings::GetStartOnStartup() const {
     ret = wxFileExists(getAutostartDir() + "/ets2-job-logger.desktop");
 #elif _WIN32
     wxRegKey startup(wxRegKey::HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Run");
-    ret = startup.HasSubKey("ETS2JobLogger");
+    ret = startup.HasValue("ETS2JobLogger");
 #elif __APPLE__
 #warning "Settings::GetStartOnBoot() not implemented"
     ret = false;
@@ -203,8 +203,8 @@ bool Settings::DisableStartOnStartup() {
 #elif _WIN32
     wxString keyName("ETS2JobLogger");
     wxRegKey startup(wxRegKey::HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Run");
-    if (startup.HasSubKey(keyName)) {
-        ret = startup.DeleteKey(keyName);
+    if (startup.HasValue(keyName)) {
+        ret = startup.DeleteValue(keyName);
     }
 #elif __APPLE__
 #warning "Settings::DisableStartOnStartup(): not implemented"
