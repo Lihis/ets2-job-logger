@@ -123,8 +123,8 @@ bool MainWindow::can_close() {
     return ret;
 }
 
-bool MainWindow::check_server_capabilities(wxString &error) {
-    return m_sender->queryCapabilities(error);
+void MainWindow::server_changed() {
+    m_sender->serverChanged();
 }
 
 void MainWindow::on_about(wxCommandEvent &event) {

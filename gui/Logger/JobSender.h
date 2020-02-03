@@ -53,12 +53,9 @@ public:
     void stop();
 
     /**
-     * Query server of it's capabilities
-     *
-     * @param error
-     * @return bool - true if query successful, false otherwise
+     * Server URL has been changed, query server capabilities again
      */
-    bool queryCapabilities(wxString &error);
+    void serverChanged();
 
     /**
      * Has messages in queue to be sent to API
@@ -96,6 +93,13 @@ private:
      * @return std::string
      */
     std::string generate_url(const std::string &endpoint);
+
+    /**
+     * Query server of it's capabilities
+     *
+     * @return bool - true if query successful, false otherwise
+     */
+    bool query_capabilities();
 
     /**
      * Send job information to the API
@@ -154,7 +158,9 @@ private:
     Settings *m_settings;
 
     bool m_running;
+    bool m_canSend;
     bool m_sending;
+    long m_job_sent_time;
     std::vector<job_t> m_job_queue;
     std::deque<truck_t> m_truck_queue;
 

@@ -96,14 +96,6 @@ bool Application::OnInit() {
         ShowWindow();
     }
 
-    if (!m_window->check_server_capabilities(error)) {
-        wxMessageBox("Failed to query server capabilities: " + error, "Error", wxOK, m_window);
-        if (ShowSettings() != wxID_OK) {
-            wxMessageBox("Valid server is needed and it needs to be online.", "Error", wxOK, m_window);
-            return false;
-        }
-    }
-
     return m_window->start();
 }
 

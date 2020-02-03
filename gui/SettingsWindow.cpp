@@ -94,12 +94,12 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
         wxMessageBox("URL can't be empty.", "Error", wxOK, this);
         return;
     } else {
-        m_settings->SetURL(m_textCtrlURL->GetValue());
-        wxString error;
-        if (m_mainWindow && !m_mainWindow->check_server_capabilities(error)) {
-            wxMessageBox("Failed to query server capabilities: " + error, "Error", wxOK, this);
-            return;
+        if (m_settings->GetURL().compare(m_textCtrlURL->GetValue()) != 0) {
+            if (m_mainWindow) {
+                m_mainWindow->server_changed();
+            }
         }
+        m_settings->SetURL(m_textCtrlURL->GetValue());
     }
 
     if (m_textCtrlToken->GetValue().empty()) {

@@ -57,12 +57,9 @@ public:
     bool can_close();
 
     /**
-     * Query server for it's capabilities
-     *
-     * @param error
-     * @return bool - true if query successful, false otherwise
+     * Inform JobSender of API URL change
      */
-    bool check_server_capabilities(wxString &error);
+    void server_changed();
 
 private:
     typedef std::lock_guard<std::mutex> LockGuard;

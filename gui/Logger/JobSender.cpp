@@ -35,7 +35,9 @@ JobSender::JobSender(wxEvtHandler *handler, Settings *settings) :
 m_handler(handler),
 m_settings(settings),
 m_running(false),
-m_sending(false)
+m_canSend(false),
+m_sending(false),
+m_job_sent_time(0L)
 {
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -92,25 +94,9 @@ void JobSender::stop() {
     }
 }
 
-bool JobSender::queryCapabilities(wxString &error) {
-    wxString response;
-    std::string url = generate_url("capabilities");
-
-    if (send_data(url, "", response, error) != 200L) {
-        return false;
-    }
-
-    Json::Value json;
-    Json::CharReaderBuilder builder;
-    Json::CharReader *reader = builder.newCharReader();
-    if (!reader->parse(response.c_str(), response.c_str() + response.length(), &json, nullptr)) {
-        error = "invalid JSON";
-        return false;
-    }
-
-    m_caps.truck = json.get("truck", false).asBool();
-
-    return true;
+void JobSender::serverChanged() {
+    m_canSend = false;
+    m_job_sent_time = 0L;
 }
 
 bool JobSender::hasPending() {
@@ -138,13 +124,20 @@ void JobSender::send(const truck_t &truck) {
 wxThread::ExitCode JobSender::Entry() {
     Json::Value json;
     wxString error;
-    wxLongLong job_sent_time = 0;
     bool job_send_failed = false;
 
     while (m_running) {
-        if ((wxGetUTCTime() - job_sent_time) > (job_send_failed ? 30 : 5)) {
+        if (!m_canSend && (wxGetUTCTime() - m_job_sent_time) > 30) {
+            m_canSend = query_capabilities();
+            if (!m_canSend) {
+                m_job_sent_time = wxGetUTCTime();
+                continue;
+            }
+        }
+
+        if ((wxGetUTCTime() - m_job_sent_time) > (job_send_failed ? 30 : 5)) {
             job_send_failed = !send_job();
-            job_sent_time = wxGetUTCTime();
+            m_job_sent_time = wxGetUTCTime();
         }
 
         send_truck();
@@ -165,6 +158,27 @@ std::string JobSender::generate_url(const std::string &endpoint) {
     return url;
 }
 
+bool JobSender::query_capabilities() {
+    std::string url = generate_url("capabilities");
+    wxString response;
+    wxString error;
+
+    if (send_data(url, "", response, error) != 200L) {
+        return false;
+    }
+
+    Json::Value json;
+    Json::CharReaderBuilder builder;
+    Json::CharReader *reader = builder.newCharReader();
+    if (!reader->parse(response.c_str(), response.c_str() + response.length(), &json, nullptr)) {
+        return false;
+    }
+
+    m_caps.truck = json.get("truck", false).asBool();
+
+    return true;
+}
+
 bool JobSender::send_job() {
     {
         LockGuard lock(m_lock);
@@ -181,7 +195,6 @@ bool JobSender::send_job() {
 
     {
         LockGuard lock(m_lock);
-        m_sending = true;
         job = m_job_queue.back();
         m_job_queue.pop_back();
     }
@@ -199,9 +212,6 @@ bool JobSender::send_job() {
         wxQueueEvent(m_handler, new wxThreadEvent(wxEVT_COMMAND_THREAD, wxID_OK));
     }
 
-    LockGuard lock(m_lock);
-    m_sending = false;
-
     return (code == 200L);
 }
 
@@ -217,7 +227,6 @@ void JobSender::send_truck() {
         if (m_truck_queue.empty()) {
             return;
         }
-        m_sending = true;
         truck = m_truck_queue.front();
         m_truck_queue.pop_front();
     }
@@ -225,9 +234,6 @@ void JobSender::send_truck() {
     truck.Serialize(json);
 
     send_data(url, json.toStyledString().c_str(), response, error);
-
-    LockGuard lock(m_lock);
-    m_sending = false;
 }
 
 #ifdef _WIN32
@@ -256,6 +262,11 @@ long JobSender::send_data(const std::string &url, const char *data, wxString &re
     long ret = 0;
     CURL *curl;
     CURLcode res;
+
+    {
+        LockGuard lock(m_lock);
+        m_sending = true;
+    }
 
     response.clear();
     error.clear();
@@ -293,6 +304,9 @@ long JobSender::send_data(const std::string &url, const char *data, wxString &re
     }
 
     curl_easy_cleanup(curl);
+
+    LockGuard lock(m_lock);
+    m_sending = false;
 
     return ret;
 }
