@@ -20,8 +20,11 @@
 #include "Settings.h"
 #include <wx/fileconf.h>
 #include <wx/filename.h>
-#ifndef __linux__
 #include <wx/stdpaths.h>
+#ifdef __linux__
+#include <fstream>
+#elif _WIN32
+#include <wx/msw/registry.h>
 #endif
 
 void Settings::SetETS2Path(const wxString &path) {
@@ -56,6 +59,36 @@ wxString Settings::GetToken() const {
     return m_token;
 }
 
+bool Settings::SetStartOnStartup(bool enabled) {
+    bool ret = enabled ? EnableStartOnStartup() : DisableStartOnStartup();
+
+    return ret;
+}
+
+bool Settings::GetStartOnStartup() const {
+    bool ret;
+
+#ifdef __linux__
+    ret = wxFileExists(getAutostartDir() + "/ets2-job-logger.desktop");
+#elif _WIN32
+    wxRegKey startup(wxRegKey::HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+    ret = startup.HasValue("ETS2JobLogger");
+#elif __APPLE__
+#warning "Settings::GetStartOnBoot() not implemented"
+    ret = false;
+#endif
+
+    return ret;
+}
+
+void Settings::SetRunInBackground(bool enabled) {
+    m_run_in_background = enabled;
+}
+
+bool Settings::GetRunInBackground() const {
+    return m_run_in_background;
+}
+
 bool Settings::SettingsLoad() {
     wxString confFile;
     wxFileConfig *config;
@@ -81,6 +114,9 @@ bool Settings::SettingsLoad() {
         }
     }
     m_token = config->Read("token", "");
+
+    config->SetPath("miscellaneous");
+    m_run_in_background = config->Read("runBackground", true);
 
     bool plugin_path_ok = (!m_ets2_path.empty() || !m_ats_path.empty());
 
@@ -112,9 +148,69 @@ bool Settings::SettingsSave() {
     config->SetPath("api");
     config->Write("url", m_url);
     config->Write("token", m_token);
+
+    config->SetPath("miscellaneous");
+    config->Write("runBackground", m_run_in_background);
+
     delete config;
 
     return true;
+}
+
+bool Settings::EnableStartOnStartup() {
+    wxString executable = wxStandardPaths::Get().GetExecutablePath();
+
+#ifdef __linux__
+    wxString desktopFile = getAutostartDir() + "/ets2-job-logger.desktop";
+
+    std::string content("[Desktop Entry]\n"
+                        "Encoding=UTF-8\n"
+                        "Type=Application\n"
+                        "Name=ETS2 Job Logger\n"
+                        "Comment=ETS2 and ATS job logger\n"
+                        "Exec=" + executable + " --minimized\n"
+                                               "StartupNotify=false\n"
+                                               "Terminal=false\n"
+                                               "Hidden=false");
+
+    std::ofstream fd(desktopFile, std::ios::out);
+    if (fd.is_open()) {
+        fd << content;
+        fd.close();
+        return true;
+    } else {
+        return false;
+    }
+#elif _WIN32
+    wxString keyName("ETS2JobLogger");
+    wxRegKey startup(wxRegKey::HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+    return startup.SetValue(keyName, executable.append(" --minimized"));
+#elif __APPLE__
+#warning "Settings::SetStartOnStartup() not implemented"
+    return true;
+#endif
+}
+
+bool Settings::DisableStartOnStartup() {
+    bool ret = true;
+
+#ifdef __linux__
+    wxString desktopFile = getAutostartDir() + "/ets2-job-logger.desktop";
+
+    if (wxFileExists(desktopFile)) {
+        ret = wxRemoveFile(desktopFile);
+    }
+#elif _WIN32
+    wxString keyName("ETS2JobLogger");
+    wxRegKey startup(wxRegKey::HKCU, "Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+    if (startup.HasValue(keyName)) {
+        ret = startup.DeleteValue(keyName);
+    }
+#elif __APPLE__
+#warning "Settings::DisableStartOnStartup(): not implemented"
+#endif
+
+    return ret;
 }
 
 wxString Settings::getConfigFile() const {
@@ -132,7 +228,7 @@ wxString Settings::getConfigFile() const {
 
 wxString Settings::getConfigDir() const {
 #ifdef __linux__
-    char *path = std::getenv("XDG_CONFIG_HOME");
+    char *path = std::getenv("XDG_DATA_HOME");
     if (!path) {
         path = std::getenv("HOME");
         if (path) {
@@ -145,3 +241,26 @@ wxString Settings::getConfigDir() const {
     return wxStandardPaths::Get().GetUserConfigDir();
 #endif
 }
+
+#ifdef __linux__
+wxString Settings::getAutostartDir() const {
+    std::string path;
+
+    char *tmp = std::getenv("XDG_CONFIG_HOME");
+    if (tmp) {
+        path = tmp;
+    } else {
+        tmp = std::getenv("HOME");
+        if (tmp) {
+            path = std::string(tmp).append("/.config");
+        }
+    }
+    path.append("/autostart");
+
+    if (!wxDirExists(path)) {
+        wxFileName::Mkdir(path);
+    }
+
+    return path;
+}
+#endif

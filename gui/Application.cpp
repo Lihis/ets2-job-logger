@@ -22,7 +22,11 @@
 #include "Logger/PluginInstaller.h"
 #include <wx/msgdlg.h>
 
-Application::Application() : m_window(nullptr) {
+Application::Application() :
+m_minimized(false),
+m_checker(nullptr),
+m_ipc(nullptr),
+m_window(nullptr) {
     SetAppName("ets2-job-logger");
     SetAppDisplayName("ETS2 Job Logger");
 
@@ -30,7 +34,31 @@ Application::Application() : m_window(nullptr) {
     Connect(wxID_EXIT, wxEVT_COMMAND_TOOL_CLICKED, wxCommandEventHandler(Application::on_exit));
 }
 
+void Application::ShowWindow() {
+    m_window->Raise();
+    m_window->Show(true);
+}
+
 bool Application::OnInit() {
+    if (!wxApp::OnInit()) {
+        return false;
+    }
+
+    m_checker = new wxSingleInstanceChecker;
+    if (m_checker->IsAnotherRunning()) {
+        wxClient client;
+        wxConnectionBase *connection = client.MakeConnection("localhost", "4242", "window");
+        if (connection) {
+            connection->Execute("raise");
+        }
+        delete connection;
+        delete m_checker;
+        return false;
+    }
+
+    m_ipc = new IPCServer(this);
+    m_ipc->Create("4242");
+
     if (!SettingsLoad()) {
         if (ShowSettings() != wxID_OK) {
             wxMessageBox("Valid settings are required, exiting..", "Error", wxOK, nullptr);
@@ -63,10 +91,23 @@ bool Application::OnInit() {
     }
 
     m_window = new MainWindow(this);
-    m_window->Show(true);
     SetTopWindow(m_window);
+    if (!m_minimized) {
+        ShowWindow();
+    }
 
     return m_window->start();
+}
+
+void Application::OnInitCmdLine(wxCmdLineParser &parser) {
+    parser.SetDesc(CMD_DESCRIPTION);
+    parser.SetSwitchChars("-");
+}
+
+bool Application::OnCmdLineParsed(wxCmdLineParser &parser) {
+    m_minimized = parser.Found("m");
+
+    return true;
 }
 
 void Application::on_show_settings(wxCommandEvent &event/*event*/) {
@@ -85,6 +126,9 @@ void Application::on_exit(wxCommandEvent &event) {
     } else {
         event.Skip();
     }
+
+    delete m_checker;
+    delete m_ipc;
 }
 
 int Application::ShowSettings() {

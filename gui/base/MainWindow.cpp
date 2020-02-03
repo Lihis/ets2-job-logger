@@ -96,10 +96,10 @@ MainWindow::MainWindow( wxWindow* parent, wxWindowID id, const wxString& title, 
 	m_lblIncome->Wrap( -1 );
 	fgSizer3->Add( m_lblIncome, 0, wxALL, 5 );
 
-	wxStaticText* m_staticTextTrailerDamage;
-	m_staticTextTrailerDamage = new wxStaticText( sbSizer3->GetStaticBox(), wxID_ANY, wxT("Damage:"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticTextTrailerDamage->Wrap( -1 );
-	fgSizer3->Add( m_staticTextTrailerDamage, 0, wxALL, 5 );
+	wxStaticText* m_staticTextCargoDamage;
+	m_staticTextCargoDamage = new wxStaticText( sbSizer3->GetStaticBox(), wxID_ANY, wxT("Damage:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticTextCargoDamage->Wrap( -1 );
+	fgSizer3->Add( m_staticTextCargoDamage, 0, wxALL, 5 );
 
 	m_lblCargoDamage = new wxStaticText( sbSizer3->GetStaticBox(), wxID_ANY, wxT("-"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_lblCargoDamage->Wrap( -1 );

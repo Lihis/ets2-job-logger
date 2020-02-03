@@ -150,6 +150,12 @@ void MainWindow::on_about(wxCommandEvent &event) {
 }
 
 void MainWindow::on_close(wxCloseEvent &event) {
+    if (m_settings->GetRunInBackground()) {
+        Hide();
+        event.Veto();
+        return;
+    }
+
     if (can_close()) {
         stop();
         Destroy();

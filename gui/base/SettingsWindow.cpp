@@ -70,6 +70,18 @@ SettingsWindow::SettingsWindow( wxWindow* parent, wxWindowID id, const wxString&
 
 	bSizer3->Add( sbSizerAPI, 0, wxALL|wxEXPAND, 5 );
 
+	wxStaticBoxSizer* sbSizerMisc;
+	sbSizerMisc = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Miscellaneous") ), wxVERTICAL );
+
+	m_checkBoxStartOnStartup = new wxCheckBox( sbSizerMisc->GetStaticBox(), wxID_ANY, wxT("Start on startup"), wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizerMisc->Add( m_checkBoxStartOnStartup, 0, wxALL, 5 );
+
+	m_checkBoxRunInBackground = new wxCheckBox( sbSizerMisc->GetStaticBox(), wxID_ANY, wxT("Run in background"), wxDefaultPosition, wxDefaultSize, 0 );
+	sbSizerMisc->Add( m_checkBoxRunInBackground, 0, wxALL, 5 );
+
+
+	bSizer3->Add( sbSizerMisc, 0, wxALL|wxEXPAND, 5 );
+
 	wxBoxSizer* bSizerButtons;
 	bSizerButtons = new wxBoxSizer( wxHORIZONTAL );
 

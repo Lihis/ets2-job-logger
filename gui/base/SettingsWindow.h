@@ -45,6 +45,8 @@ namespace base
 			wxDirPickerCtrl* m_dirCtrlATSPath;
 			wxTextCtrl* m_textCtrlURL;
 			wxTextCtrl* m_textCtrlToken;
+			wxCheckBox* m_checkBoxStartOnStartup;
+			wxCheckBox* m_checkBoxRunInBackground;
 			wxButton* m_buttonOK;
 
 			// Virtual event handlers, overide them in your derived class

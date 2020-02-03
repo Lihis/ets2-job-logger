@@ -28,8 +28,27 @@
 #define ETS2_JOB_LOGGER_APPLICATION_H
 
 #include <wx/app.h>
+#include <wx/cmdline.h>
+#include <wx/snglinst.h>
+#include <wx/ipc.h>
 #include "Logger/Settings.h"
 #include "MainWindow.h"
+
+static const wxCmdLineEntryDesc CMD_DESCRIPTION [] = {
+    {
+        wxCMD_LINE_SWITCH,
+        "m", "minimized", "Start minimized",
+        wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_SWITCH,
+        "h", "help", "Displays this help and exit.",
+        wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+    { wxCMD_LINE_NONE }
+};
+
+class IPCConnection;
+class IPCServer;
 
 class Application : public wxApp, public Settings {
 public:
@@ -38,6 +57,11 @@ public:
     Application(Application const&) = delete;
     Application& operator=(Application const &) = delete;
 
+    /**
+     * Show main window
+     */
+    void ShowWindow();
+
 protected:
     /**
      * Application init
@@ -45,6 +69,21 @@ protected:
      * @return true, if settings are valid and plugin is installed
      */
     bool OnInit() final;
+
+    /**
+     * Command line init
+     *
+     * @param parser
+     */
+    void OnInitCmdLine(wxCmdLineParser &parser) final;
+
+    /**
+     * Parse command line arguments
+     *
+     * @param parser
+     * @return bool - true if arguments were valid, false otherwise
+     */
+    bool OnCmdLineParsed(wxCmdLineParser &parser) final;
 
     /**
      * Show SettingsWindow event
@@ -68,7 +107,40 @@ private:
      */
     int ShowSettings();
 
+    bool m_minimized;
+    wxSingleInstanceChecker* m_checker;
+    IPCServer *m_ipc;
     MainWindow *m_window;
+};
+
+class IPCConnection : public wxConnection {
+public:
+    explicit IPCConnection(Application *app) : m_app(app) {};
+
+protected:
+    bool OnExec(const wxString& topic, const wxString& data) override {
+        if (topic.compare("window") == 0 && data.compare("raise") == 0) {
+            m_app->ShowWindow();
+            return true;
+        }
+
+        return false;
+    }
+
+private:
+    Application *m_app;
+};
+
+class IPCServer : public wxServer {
+public:
+    explicit IPCServer(Application *app) : m_app(app) {};
+
+    wxConnectionBase *OnAcceptConnection(const wxString& topic) override {
+        return new IPCConnection(m_app);
+    }
+
+private:
+    Application *m_app;
 };
 
 #endif //ETS2_JOB_LOGGER_APPLICATION_H
