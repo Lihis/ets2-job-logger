@@ -95,12 +95,14 @@ struct source_destination_t {
     MSGPACK_DEFINE(city, company);
 
 #ifndef PLUGIN_INTERNAL
-    void Serialize(Json::Value &root) const {
+    void Serialize(Json::Value &root, bool is_special) const {
         root["city"] = Json::Value();
-        root["company"] = Json::Value();
-
         city.Serialize(root["city"]);
-        company.Serialize(root["company"]);
+
+        if (!is_special) {
+            root["company"] = Json::Value();
+            company.Serialize(root["company"]);
+        }
     }
 #endif
 };
@@ -108,10 +110,7 @@ typedef source_destination_t source_t;
 typedef source_destination_t destination_t;
 
 struct truck_t {
-    truck_t() {
-        odometer = -1.f;
-        fuel = -1.f;
-        speed = 0.f;
+    truck_t() : odometer(-1.f), fuel(-1.f), speed(0.f), x(0.f), y(0.f), z(0.f), heading(0.f) {
     }
 
     float odometer;
@@ -147,7 +146,7 @@ struct job_t {
     explicit job_t(const Game &game = Game::Unknown) {
         this->game = game;
         status = JobStatus::FreeAsWind;
-        distance = {};
+        isSpecial = false;
         fuelConsumed = 0.f;
         maxSpeed = 0.f;
         income = 0;
@@ -159,14 +158,14 @@ struct job_t {
 
     Game game;
     JobStatus status;
+    bool isSpecial;
 
     struct distance_t {
         float driven;
         uint32_t planned;
 
         MSGPACK_DEFINE(driven, planned);
-    } distance;
-    float estimatedKm;
+    } distance = {};
     float fuelConsumed;
     float maxSpeed;
 
@@ -199,7 +198,7 @@ struct job_t {
     source_t source;
     destination_t destination;
 
-    MSGPACK_DEFINE(game, status, distance, fuelConsumed, maxSpeed, income, trailer, cargo, source, destination);
+    MSGPACK_DEFINE(game, status, isSpecial, distance, fuelConsumed, maxSpeed, income, trailer, cargo, source, destination);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
@@ -219,6 +218,7 @@ struct job_t {
 
         root["game"] = game_name;
         root["status"] = (uint8_t)status;
+        root["isSpecial"] = isSpecial;
         root["income"] = Json::Value::UInt64(income);
         root["maxSpeed"] = maxSpeed;
         root["fuelConsumed"] = fuelConsumed;
@@ -236,10 +236,10 @@ struct job_t {
         root["cargo"] = cargoObj;
 
         root["source"] = Json::Value();
-        source.Serialize(root["source"]);
+        source.Serialize(root["source"], isSpecial);
 
         root["destination"] = Json::Value();
-        destination.Serialize(root["destination"]);
+        destination.Serialize(root["destination"], isSpecial);
     }
 #endif
 };
