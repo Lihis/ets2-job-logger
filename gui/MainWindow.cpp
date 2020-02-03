@@ -71,11 +71,11 @@ void MainWindow::on_job_update(wxCommandEvent &event) {
         if (m_job.status != JobStatus::FreeAsWind) {
             wxString origin(wxString::FromUTF8(m_job.source.city.name.c_str()));
             wxString sender(wxString::FromUTF8(m_job.source.company.name.c_str()));
-            m_lblOrigin->SetLabel(origin + " (" + sender + ")");
+            m_lblOrigin->SetLabel(origin + (sender.empty() ? "" : " (" + sender + ")"));
 
             wxString destination(wxString::FromUTF8(m_job.destination.city.name.c_str()));
             wxString receiver(wxString::FromUTF8(m_job.destination.company.name.c_str()));
-            m_lblDestination->SetLabel(destination + " (" + receiver + ")");
+            m_lblDestination->SetLabel(destination + (receiver.empty() ? "" : " (" + receiver + ")"));
         } else {
             m_lblOrigin->SetLabel("-");
             m_lblDestination->SetLabel("-");
