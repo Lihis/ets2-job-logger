@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 #include "SettingsWindow.h"
+#include "Logger/PluginInstaller.h"
 #include <wx/msgdlg.h>
 
 SettingsWindow::SettingsWindow(Settings *settings, wxWindow *parent) :
@@ -30,12 +31,15 @@ m_settings(settings)
     bool install_ats = !m_settings->GetATSPath().empty();
 
     if (!install_ets2 && !install_ats) {
+        m_checkBoxETS2->SetValue(true);
         m_dirCtrlETS2Path->Enable(true);
     } else {
+        m_checkBoxETS2->SetValue(install_ets2);
         m_dirCtrlETS2Path->Enable(install_ets2);
     }
 
     m_dirCtrlETS2Path->SetPath(m_settings->GetETS2Path());
+    m_checkBoxATS->SetValue(install_ats);
     m_dirCtrlATSPath->Enable(install_ats);
     m_dirCtrlATSPath->SetPath(m_settings->GetATSPath());
 
@@ -72,6 +76,11 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
             wxMessageBox("Path to ETS2 must be selected.", "Error", wxOK, this);
             return;
         } else {
+            wxString error;
+            if (!PluginInstaller::MaybeUpdate("ETS2", m_dirCtrlETS2Path->GetPath(), error)) {
+                wxMessageBox(error, "Error", wxOK, this);
+                return;
+            }
             m_settings->SetETS2Path(m_dirCtrlETS2Path->GetPath());
         }
     } else {
@@ -83,6 +92,11 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
             wxMessageBox("Path to ATS must be selected.", "Error", wxOK, this);
             return;
         } else {
+            wxString error;
+            if (!PluginInstaller::MaybeUpdate("ATS", m_dirCtrlATSPath->GetPath(), error)) {
+                wxMessageBox(error, "Error", wxOK, this);
+                return;
+            }
             m_settings->SetATSPath(m_dirCtrlATSPath->GetPath());
         }
     } else {

@@ -21,7 +21,6 @@ SettingsWindow::SettingsWindow( wxWindow* parent, wxWindowID id, const wxString&
 	sbSizerGame = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Game") ), wxVERTICAL );
 
 	m_checkBoxETS2 = new wxCheckBox( sbSizerGame->GetStaticBox(), wxID_ANY, wxT("Install ETS2 plugin"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_checkBoxETS2->SetValue(true);
 	sbSizerGame->Add( m_checkBoxETS2, 0, wxALL, 5 );
 
 	wxStaticText* m_staticTextETS2Path;

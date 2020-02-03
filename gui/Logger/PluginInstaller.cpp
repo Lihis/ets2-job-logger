@@ -22,9 +22,7 @@
 #ifdef __linux__
 #include <wx/filefn.h>
 #endif
-#include <wx/stdpaths.h>
 #include <wx/filename.h>
-#include <fstream>
 #include <openssl/sha.h>
 #include <sstream>
 #include <iomanip>
@@ -150,7 +148,14 @@ wxString get_sha256(const wxString &file) {
     return ss.str();
 }
 
-bool PluginInstaller::needs_update(const wxString &game_path,
+bool PluginInstaller::CheckGamePath(const wxString &path) {
+    Platform platform = get_game_platform(path);
+    wxString gameBinDir = get_game_bin_directory(platform, path);
+
+    return wxDirExists(gameBinDir);
+}
+
+bool PluginInstaller::NeedsUpdate(const wxString &game_path,
                                    bool &needs_update, wxString &error) {
     Platform platform = get_game_platform(game_path);
     wxString pluginFile = get_plugin_file_path(platform);
@@ -158,7 +163,6 @@ bool PluginInstaller::needs_update(const wxString &game_path,
     wxString gamePluginDir = gameBinDir + "plugins";
     wxString installedPlugin = gamePluginDir + wxFileName::GetPathSeparator() +
             wxString("ets2-job-logger") + get_plugin_extension(platform);
-
 
     if (!wxFileExists(pluginFile)) {
         error = "Plugin file missing, check your program installation.";
@@ -182,7 +186,7 @@ bool PluginInstaller::needs_update(const wxString &game_path,
     return true;
 }
 
-bool PluginInstaller::update(const wxString &game_path, wxString &error) {
+bool PluginInstaller::Update(const wxString &game_path, wxString &error) {
     bool ret = true;
     Platform platform = get_game_platform(game_path);
     wxString pluginFile = get_plugin_file_path(platform);
@@ -190,11 +194,6 @@ bool PluginInstaller::update(const wxString &game_path, wxString &error) {
     wxString gamePluginDir = gameBinDir + "plugins";
     wxString installPath = gamePluginDir + wxFileName::GetPathSeparator() +
             wxString("ets2-job-logger") + get_plugin_extension(platform);
-
-    if (!wxDirExists(gameBinDir)) {
-        error = "ETS2 path does not seem correct, please select root of ETS2 directory";
-        return false;
-    }
 
     if (!wxDirExists(gamePluginDir)) {
         if (!wxMkdir(gamePluginDir)) {
@@ -209,4 +208,23 @@ bool PluginInstaller::update(const wxString &game_path, wxString &error) {
     }
 
     return ret;
+}
+
+bool PluginInstaller::MaybeUpdate(const wxString &game, const wxString &path, wxString &error) {
+    bool update;
+
+    if (!PluginInstaller::CheckGamePath(path)) {
+        error = game + " path does not seem correct, please select root of " + game + " directory";
+        return false;
+    }
+
+    if (!PluginInstaller::NeedsUpdate(path, update, error)) {
+        return false;
+    }
+
+    if (update) {
+        return PluginInstaller::Update(path, error);
+    }
+
+    return true;
 }
