@@ -10,11 +10,17 @@ set(SOURCES
     Logger/Settings.cpp
     Logger/Settings.h
 
+    base/AboutDialog.cpp
+    base/AboutDialog.h
+
     base/MainWindow.cpp
     base/MainWindow.h
 
     base/SettingsWindow.cpp
     base/SettingsWindow.h
+
+    AboutDialog.cpp
+    AboutDialog.h
 
     Application.cpp
     Application.h
@@ -27,6 +33,11 @@ set(SOURCES
 
     main.cpp
     )
+
+if(WIN32)
+    enable_language(RC)
+    set(SOURCES ${SOURCES} resources/icon/icon.rc)
+endif()
 
 find_package(wxWidgets 3.0 REQUIRED)
 include(${wxWidgets_USE_FILE})
@@ -113,4 +124,16 @@ if(DEVELOPMENT)
                            PRIVATE
                            -DDEVELOPMENT=1
                            )
+endif()
+
+if(UNIX AND NOT APPLE)
+    install(FILES resources/icon/16x16.png DESTINATION share/icons/hicolor/16x16/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/24x24.png DESTINATION share/icons/hicolor/24x24/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/32x32.png DESTINATION share/icons/hicolor/32x32/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/48x48.png DESTINATION share/icons/hicolor/48x48/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/64x64.png DESTINATION share/icons/hicolor/64x64/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/128x128.png DESTINATION share/icons/hicolor/128x128/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/256x256.png DESTINATION share/icons/hicolor/256x256/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/512x512.png DESTINATION share/icons/hicolor/512x512/apps RENAME ets2-job-logger.png)
+    install(FILES resources/icon/icon.svg DESTINATION share/icons/hicolor/scalable/apps RENAME ets2-job-logger.svg)
 endif()

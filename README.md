@@ -173,3 +173,14 @@ conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
 When you're ready to build a release just replace `Debug` with `Release` in:
 - CMakeSettings.json (`CMake -> Change CMake settings -> CMakelists.txt`)
 - Replace all `Debug` parts of the `conan` install command.
+
+## License
+
+See [LICENSE.md](LICENSE.md).
+
+### Icon
+
+![logo](gui/resources/icon/128x128.png)
+
+"[Box, delivery, package, shipping, transport, truck icon](https://www.iconfinder.com/icons/4072100/box_delivery_package_shipping_transport_truck_icon)"
+ by [icon lauk](https://www.iconfinder.com/andhikairfani) is licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
