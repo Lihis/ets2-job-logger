@@ -144,7 +144,7 @@ happens it's a bug.
 Description of job types:
 
 ```
-0 = Unknow
+0 = Unknown
 1 = CargoMarket
 2 = QuickJob
 3 = FreightMarket
