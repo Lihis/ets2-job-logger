@@ -40,6 +40,27 @@ current version from above.
 
 In the rest of this document `<API_URL>` refers to `<API_URL>/<API_VERSION>`.
 
+### Capabilities
+
+This endpoint, `<API_URL>/capabilities`, is used to query the server of it's
+capabilities, i.e. which endpoints it supports. This is queried when program
+starts or if user changes settings.
+
+Expected HTTP response code `200`. Program refuses to run if on the start
+server can't be queried of it's capabilities either because of wrong HTTP
+response code or the received JSON is invalid.
+
+Configurable endpoints and example of JSON which server is expected to return:
+
+```
+{
+    "truck": true                 // Supports Truck -endpoint (default: false)
+}
+```
+
+JSON can be minified and keys with default values can be omitted if you want
+to use the default value.
+
 ### Job
 
 Jobs will be sent to `<API_URL>/job` when user takes a job or cancels or

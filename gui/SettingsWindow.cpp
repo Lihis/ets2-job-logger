@@ -21,9 +21,10 @@
 #include "Logger/PluginInstaller.h"
 #include <wx/msgdlg.h>
 
-SettingsWindow::SettingsWindow(Settings *settings, wxWindow *parent) :
-base::SettingsWindow(parent),
-m_settings(settings)
+SettingsWindow::SettingsWindow(Settings *settings, MainWindow *mainWindow) :
+base::SettingsWindow(mainWindow),
+m_settings(settings),
+m_mainWindow(mainWindow)
 {
     SetReturnCode(wxID_CANCEL);
 
@@ -107,6 +108,11 @@ void SettingsWindow::on_click_ok(wxCommandEvent &/*event*/) {
         wxMessageBox("URL can't be empty.", "Error", wxOK, this);
         return;
     } else {
+        if (m_settings->GetURL().compare(m_textCtrlURL->GetValue()) != 0) {
+            if (m_mainWindow) {
+                m_mainWindow->server_changed();
+            }
+        }
         m_settings->SetURL(m_textCtrlURL->GetValue());
     }
 

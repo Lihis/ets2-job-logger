@@ -56,6 +56,11 @@ public:
      */
     bool can_close();
 
+    /**
+     * Inform JobSender of API URL change
+     */
+    void server_changed();
+
 private:
     typedef std::lock_guard<std::mutex> LockGuard;
     typedef websocketpp::client<websocketpp::config::asio_client> WebsocketClient;

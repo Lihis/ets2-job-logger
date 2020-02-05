@@ -53,6 +53,11 @@ public:
     void stop();
 
     /**
+     * Server URL has been changed, query server capabilities again
+     */
+    void serverChanged();
+
+    /**
      * Has messages in queue to be sent to API
      *
      * @return bool - true if message in queue, false otherwise
@@ -90,6 +95,13 @@ private:
     std::string generate_url(const std::string &endpoint);
 
     /**
+     * Query server of it's capabilities
+     *
+     * @return bool - true if query successful, false otherwise
+     */
+    bool query_capabilities();
+
+    /**
      * Send job information to the API
      *
      * If sending failed, message is pushed back to queue
@@ -107,7 +119,6 @@ private:
     void send_truck();
 
 #ifdef _WIN32
-
     /**
      * Add certificates from system store
      *
@@ -120,14 +131,26 @@ private:
 #endif
 
     /**
+     * cURL callback to receive response data
+     *
+     * @param contents
+     * @param size
+     * @param nmemb
+     * @param userp
+     * @return size_t - bytes written
+     */
+    static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userdata);
+
+    /**
      * Wrapper to send data to the API
      *
      * @param url - Full URL
      * @param data - Data to send
+     * @param response - Received response content
      * @param error - Error message
-     * @return bool - true if sent successfully, false otherwise
+     * @return long - HTTP response code
      */
-    bool send_data(const std::string &url, const char *data, wxString &error);
+    long send_data(const std::string &url, const char *data, wxString &response, wxString &error);
 
     typedef wxCriticalSectionLocker LockGuard;
     wxCriticalSection m_lock;
@@ -135,9 +158,19 @@ private:
     Settings *m_settings;
 
     bool m_running;
+    bool m_canSend;
     bool m_sending;
+    long m_job_sent_time;
     std::vector<job_t> m_job_queue;
     std::deque<truck_t> m_truck_queue;
+
+    struct Capabilities {
+        Capabilities() :
+                truck(false) {
+        }
+
+        bool truck;
+    } m_caps;
 
 #ifdef _WIN32
     std::vector<X509*> m_certificates;

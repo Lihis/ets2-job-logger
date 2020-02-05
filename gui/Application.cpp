@@ -107,7 +107,7 @@ bool Application::OnCmdLineParsed(wxCmdLineParser &parser) {
     return true;
 }
 
-void Application::on_show_settings(wxCommandEvent &event/*event*/) {
+void Application::on_show_settings(wxCommandEvent &/*event*/) {
     ShowSettings();
 }
 
