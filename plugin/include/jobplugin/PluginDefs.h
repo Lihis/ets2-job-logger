@@ -134,22 +134,39 @@ struct truck_t {
 #endif
 };
 
-enum JobStatus {
+enum class JobStatus {
     FreeAsWind = 0,
     OnJob = 1,
     Cancelled = 2,
     Delivered = 3
 };
-MSGPACK_ADD_ENUM(JobStatus);
+MSGPACK_ADD_ENUM(JobStatus)
+
+enum class JobType {
+    Unknown = 0,
+    CargoMarket = 1,
+    QuickJob = 2,
+    FreightMarket = 3,
+    ExternalContract = 4,
+    ExternalMarket = 5
+};
+MSGPACK_ADD_ENUM(JobType)
 
 struct job_t {
     explicit job_t(const Game &game = Game::Unknown) {
         this->game = game;
         status = JobStatus::FreeAsWind;
+        type = JobType::Unknown;
         isSpecial = false;
-        fuelConsumed = 0.f;
-        maxSpeed = 0.f;
         income = 0;
+        revenue = 0;
+        xp = 0;
+        timeSpend = 0;
+        maxSpeed = 0.f;
+        fuelConsumed = 0.f;
+        autoPark = false;
+        autoLoad = false;
+        distance = {};
         trailer = {};
         cargo = {};
         source = {};
@@ -158,18 +175,26 @@ struct job_t {
 
     Game game;
     JobStatus status;
+    JobType type;
     bool isSpecial;
+    uint64_t income;
+    int64_t revenue;
+    int32_t xp;
+    uint32_t timeSpend;
+    float maxSpeed;
+    float fuelConsumed;
+    bool autoPark;
+    bool autoLoad;
 
     struct distance_t {
+        distance_t() : driven(0.f), planned(0) {
+        }
+
         float driven;
         uint32_t planned;
 
         MSGPACK_DEFINE(driven, planned);
-    } distance = {};
-    float fuelConsumed;
-    float maxSpeed;
-
-    uint64_t income;
+    } distance;
 
     struct trailer_t {
         trailer_t() {
@@ -198,7 +223,7 @@ struct job_t {
     source_t source;
     destination_t destination;
 
-    MSGPACK_DEFINE(game, status, isSpecial, distance, fuelConsumed, maxSpeed, income, trailer, cargo, source, destination);
+    MSGPACK_DEFINE(game, status, type, isSpecial, income, revenue, xp, timeSpend, maxSpeed, fuelConsumed, autoPark, autoLoad, distance, trailer, cargo, source, destination);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
@@ -218,10 +243,16 @@ struct job_t {
 
         root["game"] = game_name;
         root["status"] = (uint8_t)status;
+        root["type"] = (uint8_t)type;
         root["isSpecial"] = isSpecial;
         root["income"] = Json::Value::UInt64(income);
+        root["revenue"] = Json::Value::Int64(revenue);
+        root["xp"] = Json::Value::Int(xp);
+        root["time"] = Json::Value::UInt(timeSpend);
         root["maxSpeed"] = maxSpeed;
         root["fuelConsumed"] = fuelConsumed;
+        root["autoPark"] = autoPark;
+        root["autoLoad"] = autoLoad;
 
         Json::Value distanceObj;
         distanceObj["driven"] = distance.driven;

@@ -77,11 +77,17 @@ Below is an example of JSON format for a job.
 ```
 {
     "game": "ets2",               // Game type (ets2, ats)
-    "status": 1,                  // 0 = FreeAsWind, 1 = OnJob, 2 = Cancelled, 3 = Delivered
+    "status": 1,                  // See "Status" below
+    "type": 1                     // See "Types" below
     "isSpecial": false            // Is this special transport job
-    "income": 6878,               // In game specific units (€, $)
+    "income": 6878,               // In game specific units (ETS2: €, ATS: $)
+    "revenue": 6878,              // In game specific units (ETS2: €, ATS: $)
+    "xp": 120                     // XP received
+    "time": 234                   // Time spend on the job in game minutes
     "maxSpeed": 0.0,              // Maximum  speed during the delivery (can be negative)
     "fuelConsumed": 0.0,          // Liters
+    "autoPark": false,            // Was auto parking used
+    "autoLoad": false,            // Was auto loading used (always true for non cargo market jobs)
     "distance": {
         "driven": 0.0,            // Kilometers
         "planned": 248            // Planned trip distance kilometers
@@ -114,6 +120,36 @@ Below is an example of JSON format for a job.
     }
 }
 ```
+
+#### Status
+
+Description of job status:
+
+```
+0 = FreeAsWind
+1 = OnJob
+2 = Cancelled
+3 = Delivered
+```
+
+**Note:** Job with a status `0` should not ever be sent to the API, if that
+happens it's a bug.
+
+#### Types
+
+Description of job types:
+
+```
+0 = Unknow
+1 = CargoMarket
+2 = QuickJob
+3 = FreightMarket
+4 = ExternalContract
+5 = ExternalMarket
+```
+
+**Note:** If job has status of `0` it's most likely bug and an Issue should
+be opened if there is no open issue of it already.
 
 ### Truck
 

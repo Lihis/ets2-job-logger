@@ -142,9 +142,7 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             LockGuard lock(m_lock);
             std::string name(attr->name);
 
-            if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_special_job) {
-                m_job.isSpecial = attr->value.value_bool.value;
-            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo) {
+            if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo) {
                 m_job.cargo.name = attr->value.value_string.value;
                 found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_id) {
@@ -183,10 +181,26 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_planned_distance_km) {
                 m_job.distance.planned = attr->value.value_u32.value;
                 found++;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_special_job) {
+                m_job.isSpecial = attr->value.value_bool.value;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_job_market) {
+                std::string type(attr->value.value_string.value);
+                if (type == "cargo_market") {
+                    m_job.type = JobType::CargoMarket;
+                } else if (type == "quick_job") {
+                    m_job.type = JobType::QuickJob;
+                } else if (type == "freight_market") {
+                    m_job.type = JobType::FreightMarket;
+                } else if (type == "external_contracts") {
+                    m_job.type = JobType::ExternalContract;
+                } else if (type == "external_market") {
+                    m_job.type = JobType::ExternalMarket;
+                }
+                found++;
             }
         }
 
-        bool onJob = (found == (m_job.isSpecial ? 9 : 13));
+        bool onJob = (found == (m_job.isSpecial ? 10 : 14));
         if (onJob && m_job.status == JobStatus::FreeAsWind) {
             m_job.status = JobStatus::OnJob;
             send_job();
@@ -208,10 +222,20 @@ SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
     for (auto attr = event_info->attributes; attr->name; attr++) {
         std::string name(attr->name);
 
-        if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cargo_damage) {
+        if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_revenue) {
+            m_job.revenue = attr->value.value_s64.value;
+        } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_earned_xp) {
+            m_job.xp = attr->value.value_s32.value;
+        } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_cargo_damage) {
             m_job.cargo.damage = attr->value.value_float.value;
         } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_distance_km) {
             m_job.distance.driven = attr->value.value_float.value;
+        } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_delivery_time) {
+            m_job.timeSpend = attr->value.value_u32.value;
+        } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_park_used) {
+            m_job.autoPark = attr->value.value_bool.value;
+        } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_auto_load_used) {
+            m_job.autoLoad = attr->value.value_bool.value;
         }
     }
 
