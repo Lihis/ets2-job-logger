@@ -71,10 +71,14 @@ in 30 seconds intervals until API responds with HTTP code `200`.
 
 Below is an example of JSON format for a job.
 
+**Note:** If `isSpecial` is `true` then `company` object in `source` and
+`destination` will not exist.
+
 ```
 {
     "game": "ets2",               // Game type (ets2, ats)
     "status": 1,                  // 0 = FreeAsWind, 1 = OnJob, 2 = Cancelled, 3 = Delivered
+    "isSpecial": false            // Is this special transport job
     "income": 6878,               // In game specific units (€, $)
     "maxSpeed": 0.0,              // Maximum  speed during the delivery (can be negative)
     "fuelConsumed": 0.0,          // Liters

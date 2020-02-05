@@ -137,14 +137,13 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
 
     if (event_id == SCS_TELEMETRY_CONFIG_job) {
         uint8_t found = 0;
-        bool isSpecial = false;
 
         for (auto attr = event_info->attributes; attr->name; attr++) {
             LockGuard lock(m_lock);
             std::string name(attr->name);
 
             if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_special_job) {
-                isSpecial = attr->value.value_bool.value;
+                m_job.isSpecial = attr->value.value_bool.value;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo) {
                 m_job.cargo.name = attr->value.value_string.value;
                 found++;
@@ -187,7 +186,7 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             }
         }
 
-        bool onJob = (found == (isSpecial ? 9 : 13));
+        bool onJob = (found == (m_job.isSpecial ? 9 : 13));
         if (onJob && m_job.status == JobStatus::FreeAsWind) {
             m_job.status = JobStatus::OnJob;
             send_job();
