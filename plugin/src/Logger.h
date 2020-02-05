@@ -80,13 +80,6 @@ public:
     SCSAPI_VOID truckPlacement(const scs_value_t *const placement);
 
     /**
-     * Trailer connected callback
-     *
-     * @param connected
-     */
-    SCSAPI_VOID trailerConnected(const scs_value_t *const connected);
-
-    /**
      * Cargo damage callback
      *
      * Damage is not actually updated in job_t structure as it will be received

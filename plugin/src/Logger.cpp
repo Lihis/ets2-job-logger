@@ -95,10 +95,6 @@ SCSAPI_VOID Logger::truckPlacement(const scs_value_t *const placement) {
     m_truck.heading = orientation.heading;
 }
 
-SCSAPI_VOID Logger::trailerConnected(const scs_value_t *const connected) {
-    m_job.trailer.connected = connected ? connected->value_bool.value : false;
-}
-
 SCSAPI_VOID Logger::cargoDamage(const scs_value_t *const damage) {
     float prev = m_job.cargo.damage;
     float cur = damage ? damage->value_float.value : 0.f;
@@ -135,7 +131,18 @@ SCSAPI_VOID Logger::eventStarted(const void *const /*event_info*/) {
 SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_info) {
     std::string event_id(event_info->id);
 
-    if (event_id == SCS_TELEMETRY_CONFIG_job) {
+    if (event_id == SCS_TELEMETRY_CONFIG_trailer) {
+        for (auto attr = event_info->attributes; attr->name; attr++) {
+            LockGuard lock(m_lock);
+            std::string name(attr->name);
+
+            if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_id) {
+                m_job.trailer.id = attr->value.value_string.value;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_accessory_id) {
+                m_job.trailer.accessoryId = attr->value.value_string.value;
+            }
+        }
+    } else if (event_id == SCS_TELEMETRY_CONFIG_job) {
         uint8_t found = 0;
 
         for (auto attr = event_info->attributes; attr->name; attr++) {
@@ -202,9 +209,16 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
 
         bool onJob = (found == (m_job.isSpecial ? 10 : 14));
         if (onJob && m_job.status == JobStatus::FreeAsWind) {
+            m_job.prevStatus = m_job.status;
             m_job.status = JobStatus::OnJob;
-            send_job();
         }
+    }
+
+    if (m_job.status == JobStatus::OnJob &&
+        m_job.status != m_job.prevStatus &&
+        !m_job.trailer.id.empty()) {
+        m_job.prevStatus = m_job.status;
+        send_job();
     }
 }
 
@@ -212,10 +226,12 @@ SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
     std::string event_id(event_info->id);
 
     if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled) {
+        m_job.prevStatus = m_job.status;
         m_job.status = JobStatus::Cancelled;
     } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) {
+        m_job.prevStatus = m_job.status;
         m_job.status = JobStatus::Delivered;
-    } else if (event_id != SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) {
+    } else {
         return;
     }
 

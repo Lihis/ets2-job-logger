@@ -156,6 +156,9 @@ struct job_t {
     explicit job_t(const Game &game = Game::Unknown) {
         this->game = game;
         status = JobStatus::FreeAsWind;
+#ifdef PLUGIN_INTERNAL
+        prevStatus = JobStatus::FreeAsWind;
+#endif
         type = JobType::Unknown;
         isSpecial = false;
         income = 0;
@@ -175,6 +178,9 @@ struct job_t {
 
     Game game;
     JobStatus status;
+#ifdef PLUGIN_INTERNAL
+    JobStatus prevStatus;
+#endif
     JobType type;
     bool isSpecial;
     uint64_t income;
@@ -197,12 +203,12 @@ struct job_t {
     } distance;
 
     struct trailer_t {
-        trailer_t() {
-            connected = false;
-        }
+        trailer_t() : id(), accessoryId() {}
 
-        bool connected;
-        MSGPACK_DEFINE(connected)
+        std::string id;
+        std::string accessoryId;
+
+        MSGPACK_DEFINE(id, accessoryId);
     } trailer;
 
     struct cargo_t {
@@ -265,6 +271,11 @@ struct job_t {
         cargoObj["mass"] = cargo.mass;
         cargoObj["damage"] = cargo.damage;
         root["cargo"] = cargoObj;
+
+        Json::Value trailerObj;
+        trailerObj["id"] = trailer.id;
+        trailerObj["accessoryId"] = trailer.accessoryId;
+        root["trailer"] = trailerObj;
 
         root["source"] = Json::Value();
         source.Serialize(root["source"], isSpecial);

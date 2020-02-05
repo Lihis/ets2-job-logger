@@ -92,6 +92,10 @@ Below is an example of JSON format for a job.
         "driven": 0.0,            // Kilometers
         "planned": 248            // Planned trip distance kilometers
     },
+    "trailer": {
+        "id": ""scs_box.moving_floor.chassis_stwx2esii""
+        "accessoryId": ""
+    },
     "cargo": {
         "id": "paper",
         "name": "Office Paper",
