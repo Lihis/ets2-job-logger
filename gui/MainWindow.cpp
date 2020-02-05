@@ -221,7 +221,7 @@ void MainWindow::socket_connect() {
 }
 
 void MainWindow::socket_on_fail() {
-    m_job = job_t(m_job.game);
+    m_job = job_t();
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
     event.SetInt(static_cast<int>(PacketType::Job));
     AddPendingEvent(event);
@@ -295,7 +295,7 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
 }
 
 void MainWindow::socket_on_close() {
-    m_job = job_t(m_job.game);
+    m_job = job_t();
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
     event.SetInt(static_cast<int>(PacketType::Job));
     AddPendingEvent(event);
