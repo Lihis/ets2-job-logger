@@ -18,11 +18,10 @@
  ****************************************************************************/
 
 #include "MainWindow.h"
-#include "Version.h"
+#include "AboutDialog.h"
 #include <msgpack.hpp>
 #include <wx/msgdlg.h>
 #include <wx/notifmsg.h>
-#include <wx/aboutdlg.h>
 #ifdef _WIN32
 #include <synchapi.h>
 #endif
@@ -36,6 +35,26 @@ m_odometerOnStart(-1.f),
 m_fuelOnStart(-1.f),
 m_socket_running(false)
 {
+#ifdef __linux__
+    std::string iconName = "ets2-job-logger";
+    auto icon = wxArtProvider::GetIcon(iconName, wxART_FRAME_ICON);
+    if (!icon.IsOk()) {
+        iconName = "image-missing";
+        icon = wxArtProvider::GetIcon(iconName, wxART_FRAME_ICON);
+    }
+
+    if (icon.IsOk()) {
+        auto bundle = wxArtProvider::GetIconBundle(iconName, wxART_FRAME_ICON);
+        this->SetIcons(bundle);
+    }
+#elif _WIN32
+    wxIconBundle bundle("APP_ICON", nullptr);
+    this->SetIcons(bundle);
+#else
+    // TODO: Set MainWindow icon on MacOS
+#warning "MainWindow icon is not being set"
+#endif
+
     m_client.clear_access_channels(websocketpp::log::alevel::all);
     m_client.clear_error_channels(websocketpp::log::alevel::all);
     m_client.init_asio();
@@ -128,29 +147,8 @@ void MainWindow::server_changed() {
 }
 
 void MainWindow::on_about(wxCommandEvent &event) {
-    wxAboutDialogInfo aboutInfo;
-    aboutInfo.SetName("ETS2 Job Logger");
-    aboutInfo.SetVersion(APP_VERSION_FULL);
-    aboutInfo.SetDescription("Euro Truck Simulator 2 Job Logger");
-    aboutInfo.SetCopyright(wxString::FromUTF8("(c) Tomi Lähteenmäki 2019"));
-    aboutInfo.SetLicence("This program is free software; you can redistribute it and/or modify\n"
-                         "it under the terms of the GNU General Public License as published by\n"
-                         "the Free Software Foundation; either version 2 of the License, or\n"
-                         "(at your option) any later version.\n"
-                         "\n"
-                         "This program is distributed in the hope that it will be useful,\n"
-                         "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-                         "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-                         "GNU General Public License for more details.\n"
-                         "\n"
-                         "You should have received a copy of the GNU General Public License\n"
-                         "along with this program; if not, write to the Free Software\n"
-                         "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,\n"
-                         "MA 02110-1301, USA.");
-    aboutInfo.SetWebSite("https://github.com/Lihis/ets2-job-logger", "Website");
-    aboutInfo.AddDeveloper(wxString::FromUTF8("Tomi Lähteenmäki"));
-
-    wxAboutBox(aboutInfo, this);
+    AboutDialog dialog(this);
+    dialog.ShowModal();
 }
 
 void MainWindow::on_close(wxCloseEvent &event) {
