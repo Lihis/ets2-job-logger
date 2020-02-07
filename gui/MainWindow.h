@@ -133,7 +133,6 @@ private:
     std::mutex m_socket_lock;
     std::thread m_socket_thread;
     WebsocketClient m_client;
-    WebsocketClient::connection_ptr m_connection;
 };
 
 #endif //ETS2_JOB_LOGGER_MAINWINDOW_H

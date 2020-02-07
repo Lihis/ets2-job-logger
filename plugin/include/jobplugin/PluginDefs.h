@@ -68,9 +68,7 @@ struct version_t {
 };
 
 struct id_name_t {
-    id_name_t() {
-        id = "";
-        name = "";
+    id_name_t() : id(), name() {
     }
 
     std::string id;
@@ -212,11 +210,7 @@ struct job_t {
     } trailer;
 
     struct cargo_t {
-        cargo_t() {
-            id = "";
-            name = "-";
-            mass = 0.f;
-            damage = 0.f;
+        cargo_t() : id(), name(), mass(0.f), damage(0.f) {
         }
 
         std::string id;

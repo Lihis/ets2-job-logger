@@ -301,7 +301,7 @@ void Logger::send(const std::string &data) {
     for (it = m_connections.begin(); it != m_connections.end(); ++it) {
         try {
             m_server.send(*it, data, websocketpp::frame::opcode::binary);
-        } catch (const std::exception &exception) {
+        } catch (const std::exception &/*exception*/) {
         }
     }
 }
