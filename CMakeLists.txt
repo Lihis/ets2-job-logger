@@ -8,8 +8,10 @@ if(MSVC)
     conan_basic_setup()
 endif()
 
+if(MSVC OR MINGW)
+    configure_file(packaging/Windows/InnoSetup.iss.in InnoSetup.iss @ONLY)
+endif()
+
 add_subdirectory(scs-sdk)
 add_subdirectory(plugin)
-if(NOT MINGW)
-    add_subdirectory(gui)
-endif()
+add_subdirectory(gui)

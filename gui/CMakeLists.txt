@@ -71,11 +71,14 @@ endif()
 
 configure_file(Version.h.in Version.h)
 configure_file(Logger/PluginInstallerDefs.h.in PluginInstallerDefs.h)
+if(MSVC OR MINGW)
+    configure_file(version.iss.in version.iss)
+endif()
 
 add_executable(ets2-job-logger WIN32 ${SOURCES})
 
 if(MINGW)
-    set(WIN32_LIBS -lws2_32)
+    set(WIN32_LIBS -lws2_32 -lcrypt32)
 elseif (WIN32)
     find_library(WS2_32_LIB ws2_32.lib REQUIRED)
     find_library(GDI32_LIB gdi32.lib REQUIRED)
