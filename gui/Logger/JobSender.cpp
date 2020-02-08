@@ -237,6 +237,7 @@ void JobSender::send_truck() {
 }
 
 #ifdef _WIN32
+#pragma warning(suppress: 4138)
 int JobSender::add_certificates(void */*curl*/, void *sslctx, void *userdata) {
     auto certStore = SSL_CTX_get_cert_store(reinterpret_cast<SSL_CTX *>(sslctx));
     auto obj = static_cast<JobSender *>(userdata);

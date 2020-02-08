@@ -34,7 +34,7 @@
 #include "Logger/Settings.h"
 #include "MainWindow.h"
 
-static const wxCmdLineEntryDesc CMD_DESCRIPTION [] = {
+static const wxCmdLineEntryDesc CMD_DESCRIPTION[] = {
     {
         wxCMD_LINE_SWITCH,
         "m", "minimized", "Start minimized",
@@ -43,8 +43,9 @@ static const wxCmdLineEntryDesc CMD_DESCRIPTION [] = {
     {
         wxCMD_LINE_SWITCH,
         "h", "help", "Displays this help and exit.",
-        wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
-    { wxCMD_LINE_NONE }
+        wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP
+    },
+    wxCMD_LINE_DESC_END
 };
 
 class IPCConnection;
@@ -118,7 +119,7 @@ public:
     explicit IPCConnection(Application *app) : m_app(app) {};
 
 protected:
-    bool OnExec(const wxString& topic, const wxString& data) override {
+    bool OnExec(const wxString &topic, const wxString &data) override {
         if (topic.compare("window") == 0 && data.compare("raise") == 0) {
             m_app->ShowWindow();
             return true;
@@ -135,7 +136,7 @@ class IPCServer : public wxServer {
 public:
     explicit IPCServer(Application *app) : m_app(app) {};
 
-    wxConnectionBase *OnAcceptConnection(const wxString& topic) override {
+    wxConnectionBase *OnAcceptConnection(const wxString &/*topic*/) override {
         return new IPCConnection(m_app);
     }
 

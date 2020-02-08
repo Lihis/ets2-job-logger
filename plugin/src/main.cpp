@@ -76,7 +76,7 @@ namespace cb {
     }
 }
 
-SCSAPI_VOID callback_channel(const scs_string_t name, const scs_u32_t /*index*/, const scs_value_t *const value, scs_context_t context) {
+SCSAPI_VOID callback_channel(const scs_string_t /*name*/, const scs_u32_t /*index*/, const scs_value_t *const value, scs_context_t context) {
     if (!context) {
         return;
     }

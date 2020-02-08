@@ -55,9 +55,9 @@ MSGPACK_ADD_ENUM(Game)
 
 struct version_t {
     explicit version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
-        this->major = 0;
-        this->minor = 0;
-        this->patch = 0;
+        this->major = major;
+        this->minor = minor;
+        this->patch = patch;
     }
 
     uint8_t major;
