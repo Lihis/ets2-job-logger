@@ -286,6 +286,8 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
         }
     } else if (packetType == PacketType::CargoDamage) {
         m_job.cargo.damage = obj.as<float>();
+    } else if (packetType == PacketType::Fine) {
+        m_sender->send(obj.as<fine_t>());
     } else if (packetType == PacketType::Unknown) {
         return;
     }

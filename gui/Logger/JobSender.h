@@ -78,6 +78,13 @@ public:
      */
     void send(const truck_t &truck);
 
+    /**
+     * Add fine to send queue
+     *
+     * @param fine
+     */
+    void send(const fine_t &fine);
+
 private:
     /**
      * Main loop
@@ -117,6 +124,11 @@ private:
      * will not be sent again.
      */
     void send_truck();
+
+    /**
+     * Send received fine to the API
+     */
+    void send_fine();
 
 #ifdef _WIN32
     /**
@@ -161,15 +173,17 @@ private:
     bool m_canSend;
     bool m_sending;
     long m_job_sent_time;
+    long m_fine_failed_time;
     std::vector<job_t> m_job_queue;
     std::deque<truck_t> m_truck_queue;
+    std::deque<fine_t> m_fine_queue;
 
     struct Capabilities {
-        Capabilities() :
-                truck(false) {
+        Capabilities() : truck(false), fine(false) {
         }
 
         bool truck;
+        bool fine;
     } m_caps;
 
 #ifdef _WIN32

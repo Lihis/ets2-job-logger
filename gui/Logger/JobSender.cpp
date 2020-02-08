@@ -37,7 +37,8 @@ m_settings(settings),
 m_running(false),
 m_canSend(false),
 m_sending(false),
-m_job_sent_time(0L)
+m_job_sent_time(0L),
+m_fine_failed_time(0L)
 {
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -121,6 +122,13 @@ void JobSender::send(const truck_t &truck) {
     }
 }
 
+void JobSender::send(const fine_t &fine) {
+    if (m_caps.fine) {
+        LockGuard lock(m_lock);
+        m_fine_queue.push_back(fine);
+    }
+}
+
 wxThread::ExitCode JobSender::Entry() {
     Json::Value json;
     wxString error;
@@ -141,6 +149,8 @@ wxThread::ExitCode JobSender::Entry() {
         }
 
         send_truck();
+
+        send_fine();
 
         if (GetThread()->TestDestroy()) {
             m_running = false;
@@ -175,6 +185,7 @@ bool JobSender::query_capabilities() {
     }
 
     m_caps.truck = json.get("truck", false).asBool();
+    m_caps.fine = json.get("fine", false).asBool();
 
     return true;
 }
@@ -235,6 +246,32 @@ void JobSender::send_truck() {
     truck.position.Serialize(json);
 
     send_data(url, json.toStyledString().c_str(), response, error);
+}
+
+void JobSender::send_fine() {
+    fine_t fine;
+    std::string url = generate_url("fine");
+    Json::Value json;
+    wxString response;
+    wxString error;
+
+    {
+        LockGuard lock(m_lock);
+        if (m_fine_queue.empty() || (wxGetUTCTime() - m_fine_failed_time) < 30) {
+            return;
+        }
+        fine = m_fine_queue.front();
+        m_fine_queue.pop_front();
+    }
+
+    fine.Serialize(json);
+
+    long code = send_data(url, json.toStyledString().c_str(), response, error);
+    if (code != 200L) {
+        LockGuard lock(m_lock);
+        m_fine_queue.push_front(fine);
+        m_fine_failed_time = wxGetUTCTime();
+    }
 }
 
 #ifdef _WIN32

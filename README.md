@@ -50,15 +50,16 @@ This endpoint, `<API_URL>/capabilities`, is used to query the server of it's
 capabilities, i.e. which endpoints it supports. This is queried when program
 starts or if user changes settings.
 
-Expected HTTP response code `200`. Program refuses to run if on the start
-server can't be queried of it's capabilities either because of wrong HTTP
-response code or the received JSON is invalid.
+Expected HTTP response code `200`. Program will not send anything to the API
+until the capabilities has been successfully queried. Query can fail because
+of server did not return HTTP code `200` or the received JSON was invalid.
 
 Configurable endpoints and example of JSON which server is expected to return:
 
 ```
 {
     "truck": true                 // Supports Truck -endpoint (default: false)
+    "fine": true                  // Supports Fine -endpoint (default: false)
 }
 ```
 
@@ -192,6 +193,41 @@ Below is an example of JSON format for a truck positional data.
     "z": -61094.948
 }
 ```
+
+### Fine
+
+When player receives a fine it will be sent to `<API_URL>/fine`.
+
+Expected response code `200`.
+
+Below is an example of JSON format for fine:
+
+```
+{
+    "type": 1,                    // Explanation below
+    "amount": 370                 // Fine offence amount in native game currency
+}
+```
+
+Valid `Types` are:
+
+```
+0  = Unknown
+1  = Crash
+2  = AvoidSleeping
+3  = WrongWay
+4  = SpeedingCamera
+5  = Speeding
+6  = NoLights
+7  = RedSignal
+8  = Sleeping
+9  = AvoidWeighing
+10 = IllegalTrailer
+11 = Generic = 11
+```
+
+If API receives fine with type `Unknown` then create an issue (if does not
+exist yet) as it could indicate game has a new fine type.
 
 ## Building
 
