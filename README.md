@@ -96,6 +96,15 @@ Below is an example of JSON format for a job.
         "id": "scs_box.moving_floor.chassis_stwx2esii"
         "accessoryId": ""
     },
+    "truck": {
+        "id": "vehicle.scania.streamline",
+        "name": "Streamline",
+        "wheels": 6,
+        "brand": {
+            "id": "scania",
+            "name": "Scania"
+        }
+    },
     "cargo": {
         "id": "paper",
         "name": "Office Paper",
