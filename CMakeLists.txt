@@ -4,8 +4,6 @@ project(ets2-job-logger)
 set(CMAKE_CXX_STANDARD 11)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall")
-
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
 else()
