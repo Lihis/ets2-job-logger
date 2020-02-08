@@ -231,7 +231,8 @@ void JobSender::send_truck() {
         m_truck_queue.pop_front();
     }
 
-    truck.Serialize(json);
+    json["speed"] = truck.speed;
+    truck.position.Serialize(json);
 
     send_data(url, json.toStyledString().c_str(), response, error);
 }

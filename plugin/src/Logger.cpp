@@ -32,7 +32,6 @@ Logger::Logger(const Game &game) :
 m_game(game),
 m_paused(true),
 m_job(game),
-m_truck(),
 m_truckLastSent(std::chrono::steady_clock::now())
 {
     m_server.clear_access_channels(websocketpp::log::alevel::all);
@@ -70,15 +69,15 @@ void Logger::stop() {
 }
 
 SCSAPI_VOID Logger::odometer(const scs_value_t *const km) {
-    m_truck.odometer = km ? km->value_float.value : 0.f;
+    m_job.truck.odometer = km ? km->value_float.value : 0.f;
 }
 
 SCSAPI_VOID Logger::fuel(const scs_value_t *const liters) {
-    m_truck.fuel = liters ? liters->value_float.value : 0.f;
+    m_job.truck.fuel = liters ? liters->value_float.value : 0.f;
 }
 
 SCSAPI_VOID Logger::speed(const scs_value_t *const speed) {
-    m_truck.speed = speed ? speed->value_float.value : 0.f;
+    m_job.truck.speed = speed ? speed->value_float.value : 0.f;
 }
 
 SCSAPI_VOID Logger::truckPlacement(const scs_value_t *const placement) {
@@ -87,12 +86,12 @@ SCSAPI_VOID Logger::truckPlacement(const scs_value_t *const placement) {
     }
 
     scs_value_dvector_t position = placement->value_dplacement.position;
-    m_truck.x = position.x;
-    m_truck.y = position.y;
-    m_truck.z = position.z;
+    m_job.truck.position.x = position.x;
+    m_job.truck.position.y = position.y;
+    m_job.truck.position.z = position.z;
 
     scs_value_euler_t orientation = placement->value_dplacement.orientation;
-    m_truck.heading = orientation.heading;
+    m_job.truck.position.heading = orientation.heading;
 }
 
 SCSAPI_VOID Logger::cargoDamage(const scs_value_t *const damage) {
@@ -131,7 +130,35 @@ SCSAPI_VOID Logger::eventStarted(const void *const /*event_info*/) {
 SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_info) {
     std::string event_id(event_info->id);
 
-    if (event_id == SCS_TELEMETRY_CONFIG_trailer) {
+    if (event_id == SCS_TELEMETRY_CONFIG_truck) {
+        if (!event_info->attributes->name) {
+            m_job.truck = {};
+            return;
+        }
+
+        for (auto attr = event_info->attributes; attr->name; attr++) {
+            LockGuard lock(m_lock);
+            std::string name(attr->name);
+
+            if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_id) {
+                m_job.truck.id = attr->value.value_string.value;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_name) {
+                m_job.truck.name = attr->value.value_string.value;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_wheel_count) {
+                m_job.truck.wheels = attr->value.value_u32.value;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand) {
+                m_job.truck.brand.name = attr->value.value_string.value;
+            } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_brand_id) {
+                m_job.truck.brand.id = attr->value.value_string.value;
+            }
+        }
+        m_shouldSend++;
+    } else if (event_id == SCS_TELEMETRY_CONFIG_trailer) {
+        if (!event_info->attributes->name) {
+            m_job.trailer = {};
+            return;
+        }
+
         for (auto attr = event_info->attributes; attr->name; attr++) {
             LockGuard lock(m_lock);
             std::string name(attr->name);
@@ -142,8 +169,18 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
                 m_job.trailer.accessoryId = attr->value.value_string.value;
             }
         }
+        m_shouldSend++;
     } else if (event_id == SCS_TELEMETRY_CONFIG_job) {
-        uint8_t found = 0;
+        if (!event_info->attributes->name) {
+            m_job.cargo = {};
+            m_job.source = {};
+            m_job.destination = {};
+            m_job.income = 0;
+            m_job.distance = {};
+            m_job.isSpecial = false;
+            m_job.type = JobType::Unknown;
+            return;
+        }
 
         for (auto attr = event_info->attributes; attr->name; attr++) {
             LockGuard lock(m_lock);
@@ -151,43 +188,30 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
 
             if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo) {
                 m_job.cargo.name = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_id) {
                 m_job.cargo.id = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_cargo_mass) {
                 m_job.cargo.mass = attr->value.value_float.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city) {
                 m_job.source.city.name = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_city_id) {
                 m_job.source.city.id = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city) {
                 m_job.destination.city.name = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_city_id) {
                 m_job.destination.city.id = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company) {
                 m_job.source.company.name = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_source_company_id) {
                 m_job.source.company.id = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company) {
                 m_job.destination.company.name = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_destination_company_id) {
                 m_job.destination.company.id = attr->value.value_string.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_income) {
                 m_job.income = attr->value.value_u64.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_planned_distance_km) {
                 m_job.distance.planned = attr->value.value_u32.value;
-                found++;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_special_job) {
                 m_job.isSpecial = attr->value.value_bool.value;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_job_market) {
@@ -203,21 +227,16 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
                 } else if (type == "external_market") {
                     m_job.type = JobType::ExternalMarket;
                 }
-                found++;
             }
         }
 
-        bool onJob = (found == (m_job.isSpecial ? 10 : 14));
-        if (onJob && m_job.status == JobStatus::FreeAsWind) {
-            m_job.prevStatus = m_job.status;
+        if (m_job.status == JobStatus::FreeAsWind) {
+            m_shouldSend++;
             m_job.status = JobStatus::OnJob;
         }
     }
 
-    if (m_job.status == JobStatus::OnJob &&
-        m_job.status != m_job.prevStatus &&
-        !m_job.trailer.id.empty()) {
-        m_job.prevStatus = m_job.status;
+    if (m_shouldSend >= 3) {
         send_job();
     }
 }
@@ -226,10 +245,8 @@ SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
     std::string event_id(event_info->id);
 
     if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_cancelled) {
-        m_job.prevStatus = m_job.status;
         m_job.status = JobStatus::Cancelled;
     } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) {
-        m_job.prevStatus = m_job.status;
         m_job.status = JobStatus::Delivered;
     } else {
         return;
@@ -277,6 +294,7 @@ void Logger::send_version() {
 
 void Logger::send_job() {
     LockGuard lock(m_lock);
+    m_shouldSend = 0;
 
     std::stringstream buffer;
     msgpack::pack(buffer, PacketType::Job);
@@ -290,7 +308,7 @@ void Logger::send_truck_info() {
 
     std::stringstream buffer;
     msgpack::pack(buffer, PacketType::Truck);
-    msgpack::pack(buffer, m_truck);
+    msgpack::pack(buffer, m_job.truck);
 
     send(buffer.str());
 }

@@ -85,6 +85,7 @@ struct id_name_t {
 };
 typedef struct id_name_t city_t;
 typedef struct id_name_t company_t;
+typedef struct id_name_t brand_t;
 
 struct source_destination_t {
     city_t city;
@@ -107,27 +108,49 @@ struct source_destination_t {
 typedef source_destination_t source_t;
 typedef source_destination_t destination_t;
 
-struct truck_t {
-    truck_t() : odometer(-1.f), fuel(-1.f), speed(0.f), x(0.f), y(0.f), z(0.f), heading(0.f) {
+struct position_t {
+    position_t() : x(0.f), y(0.f), z(0.f), heading(0.f) {
     }
 
-    float odometer;
-    float fuel;
-    float speed;
     double x;
     double y;
     double z;
     float heading;
 
-    MSGPACK_DEFINE(odometer, fuel, speed, x, y, z, heading);
+    MSGPACK_DEFINE(x, y, z, heading);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
-        root["speed"] = speed;
         root["x"] = x;
         root["y"] = y;
         root["z"] = z;
         root["heading"] = heading;
+    }
+#endif
+};
+
+struct truck_t {
+    truck_t() : id(), name(), wheels(0), brand(), odometer(-1.f), fuel(-1.f), speed(0.f), position() {
+    }
+
+    std::string id;
+    std::string name;
+    uint32_t wheels;
+    brand_t brand;
+    float odometer;
+    float fuel;
+    float speed;
+    position_t position;
+
+    MSGPACK_DEFINE(id, name, wheels, brand, odometer, fuel, speed, position);
+
+#ifndef PLUGIN_INTERNAL
+    void Serialize(Json::Value &root) const {
+        root["id"] = id;
+        root["name"] = name;
+        root["wheels"] = Json::Value::UInt(wheels);
+        root["brand"] = Json::Value();
+        brand.Serialize(root["brand"]);
     }
 #endif
 };
@@ -154,9 +177,6 @@ struct job_t {
     explicit job_t(const Game &game = Game::Unknown) {
         this->game = game;
         status = JobStatus::FreeAsWind;
-#ifdef PLUGIN_INTERNAL
-        prevStatus = JobStatus::FreeAsWind;
-#endif
         type = JobType::Unknown;
         isSpecial = false;
         income = 0;
@@ -176,9 +196,6 @@ struct job_t {
 
     Game game;
     JobStatus status;
-#ifdef PLUGIN_INTERNAL
-    JobStatus prevStatus;
-#endif
     JobType type;
     bool isSpecial;
     uint64_t income;
@@ -209,6 +226,8 @@ struct job_t {
         MSGPACK_DEFINE(id, accessoryId);
     } trailer;
 
+    truck_t truck;
+
     struct cargo_t {
         cargo_t() : id(), name(), mass(0.f), damage(0.f) {
         }
@@ -223,7 +242,7 @@ struct job_t {
     source_t source;
     destination_t destination;
 
-    MSGPACK_DEFINE(game, status, type, isSpecial, income, revenue, xp, timeSpend, maxSpeed, fuelConsumed, autoPark, autoLoad, distance, trailer, cargo, source, destination);
+    MSGPACK_DEFINE(game, status, type, isSpecial, income, revenue, xp, timeSpend, maxSpeed, fuelConsumed, autoPark, autoLoad, distance, trailer, truck, cargo, source, destination);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
@@ -237,7 +256,6 @@ struct job_t {
                 game_name = "ats";
                 break;
             case Game::Unknown:
-            default:
                 break;
         }
 
@@ -270,6 +288,9 @@ struct job_t {
         trailerObj["id"] = trailer.id;
         trailerObj["accessoryId"] = trailer.accessoryId;
         root["trailer"] = trailerObj;
+
+        root["truck"] = Json::Value();
+        truck.Serialize(root["truck"]);
 
         root["source"] = Json::Value();
         source.Serialize(root["source"], isSpecial);

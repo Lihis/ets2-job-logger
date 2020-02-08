@@ -175,8 +175,8 @@ private:
 
     Game m_game;
     bool m_paused;
+    uint8_t m_shouldSend;
     job_t m_job;
-    truck_t m_truck;
 
     std::chrono::steady_clock::time_point m_truckLastSent;
 };
