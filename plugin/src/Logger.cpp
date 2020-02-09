@@ -132,7 +132,6 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
 
     if (event_id == SCS_TELEMETRY_CONFIG_truck) {
         if (!event_info->attributes->name) {
-            m_job.truck = {};
             return;
         }
 
@@ -155,7 +154,6 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
         m_shouldSend++;
     } else if (event_id == SCS_TELEMETRY_CONFIG_trailer) {
         if (!event_info->attributes->name) {
-            m_job.trailer = {};
             return;
         }
 
@@ -172,13 +170,6 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
         m_shouldSend++;
     } else if (event_id == SCS_TELEMETRY_CONFIG_job) {
         if (!event_info->attributes->name) {
-            m_job.cargo = {};
-            m_job.source = {};
-            m_job.destination = {};
-            m_job.income = 0;
-            m_job.distance = {};
-            m_job.isSpecial = false;
-            m_job.type = JobType::Unknown;
             return;
         }
 
