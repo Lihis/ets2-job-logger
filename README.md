@@ -20,6 +20,10 @@ Applications stores job information in memory until it's sent to your API. If
 sending failed, eg. your API did not return expected HTTP code, applications
 tries to send it again later until it's sent successfully.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## API Documentation
 
 Current version `v1`.
