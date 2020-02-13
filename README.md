@@ -196,7 +196,8 @@ Below is an example of JSON format for a truck positional data.
 
 ### Fine
 
-When player receives a fine it will be sent to `<API_URL>/fine`.
+When player receives a fine it will be sent to `<API_URL>/fine`. Fines will be
+sent to the API even when player does not have an active job.
 
 Expected response code `200`.
 

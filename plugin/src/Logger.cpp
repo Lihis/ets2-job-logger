@@ -239,10 +239,6 @@ SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
     } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) {
         m_job.status = JobStatus::Delivered;
     } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) {
-        if (m_job.status != JobStatus::OnJob) {
-            return;
-        }
-
         fine_t fine;
         for (auto attr = event_info->attributes; attr->name; attr++) {
             std::string name(attr->name);
