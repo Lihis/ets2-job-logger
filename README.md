@@ -71,8 +71,14 @@ in 30 seconds intervals until API responds with HTTP code `200`.
 
 Below is an example of JSON format for a job.
 
-**Note:** If `isSpecial` is `true` then `company` object in `source` and
-`destination` will not exist.
+**Notes:**
+
+- If `isSpecial` is `true` then `company` object in `source` and
+  `destination` will not exist.
+- Truck _can be_ wrong when status is `Delivered` or `Cancelled`
+    - e.g. when user owns a truck but decides to do a quick job; truck is
+      correct when `OnJob` but when `Delivered`/`Cancelled` the truck is
+      reported as the truck the user owns instead of the one used in the job.
 
 ```
 {
