@@ -129,6 +129,16 @@ struct position_t {
 #endif
 };
 
+struct trailer_t {
+    trailer_t() : id(), accessoryId() {
+    }
+
+    std::string id;
+    std::string accessoryId;
+
+    MSGPACK_DEFINE(id, accessoryId);
+};
+
 struct truck_t {
     truck_t() : id(), name(), wheels(0), brand(), odometer(-1.f), fuel(-1.f), speed(0.f), position() {
     }
@@ -217,15 +227,7 @@ struct job_t {
         MSGPACK_DEFINE(driven, planned);
     } distance;
 
-    struct trailer_t {
-        trailer_t() : id(), accessoryId() {}
-
-        std::string id;
-        std::string accessoryId;
-
-        MSGPACK_DEFINE(id, accessoryId);
-    } trailer;
-
+    trailer_t trailer;
     truck_t truck;
 
     struct cargo_t {

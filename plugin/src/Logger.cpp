@@ -31,6 +31,7 @@
 Logger::Logger(const Game &game) :
 m_game(game),
 m_paused(true),
+m_shouldSendJob(false),
 m_job(game),
 m_truckLastSent(std::chrono::steady_clock::now())
 {
@@ -117,6 +118,10 @@ SCSAPI_VOID Logger::frameEnd(const void *const /*event_info*/) {
         send_truck_info();
         m_truckLastSent = now;
     }
+
+    if (m_shouldSendJob) {
+        send_job();
+    }
 }
 
 SCSAPI_VOID Logger::eventPaused(const void *const /*event_info*/) {
@@ -151,7 +156,6 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
                 m_job.truck.brand.id = attr->value.value_string.value;
             }
         }
-        m_shouldSend++;
     } else if (event_id == SCS_TELEMETRY_CONFIG_trailer) {
         if (!event_info->attributes->name) {
             return;
@@ -167,7 +171,6 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
                 m_job.trailer.accessoryId = attr->value.value_string.value;
             }
         }
-        m_shouldSend++;
     } else if (event_id == SCS_TELEMETRY_CONFIG_job) {
         if (!event_info->attributes->name) {
             return;
@@ -221,14 +224,10 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             }
         }
 
-        if (m_job.status == JobStatus::FreeAsWind) {
-            m_shouldSend++;
+        if (event_info->attributes->name && m_job.status == JobStatus::FreeAsWind) {
             m_job.status = JobStatus::OnJob;
+            m_shouldSendJob = true;
         }
-    }
-
-    if (m_shouldSend >= 3) {
-        send_job();
     }
 }
 
@@ -285,7 +284,7 @@ void Logger::send_version() {
 
 void Logger::send_job() {
     LockGuard lock(m_lock);
-    m_shouldSend = 0;
+    m_shouldSendJob = false;
 
     std::stringstream buffer;
     msgpack::pack(buffer, PacketType::Job);
