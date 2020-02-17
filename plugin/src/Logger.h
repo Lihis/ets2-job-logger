@@ -80,13 +80,6 @@ public:
     SCSAPI_VOID truckPlacement(const scs_value_t *const placement);
 
     /**
-     * Trailer connected callback
-     *
-     * @param connected
-     */
-    SCSAPI_VOID trailerConnected(const scs_value_t *const connected);
-
-    /**
      * Cargo damage callback
      *
      * Damage is not actually updated in job_t structure as it will be received
@@ -182,8 +175,8 @@ private:
 
     Game m_game;
     bool m_paused;
+    bool m_shouldSendJob;
     job_t m_job;
-    truck_t m_truck;
 
     std::chrono::steady_clock::time_point m_truckLastSent;
 };

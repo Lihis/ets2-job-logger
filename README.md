@@ -75,20 +75,45 @@ in 30 seconds intervals until API responds with HTTP code `200`.
 
 Below is an example of JSON format for a job.
 
-**Note:** If `isSpecial` is `true` then `company` object in `source` and
-`destination` will not exist.
+**Notes:**
+
+- If `isSpecial` is `true` then `company` object in `source` and
+  `destination` will not exist.
+- Truck _can be_ wrong when status is `Delivered` or `Cancelled`
+    - e.g. when user owns a truck but decides to do a quick job; truck is
+      correct when `OnJob` but when `Delivered`/`Cancelled` the truck is
+      reported as the truck the user owns instead of the one used in the job.
 
 ```
 {
     "game": "ets2",               // Game type (ets2, ats)
-    "status": 1,                  // 0 = FreeAsWind, 1 = OnJob, 2 = Cancelled, 3 = Delivered
+    "status": 1,                  // See "Status" below
+    "type": 1                     // See "Types" below
     "isSpecial": false            // Is this special transport job
-    "income": 6878,               // In game specific units (€, $)
+    "income": 6878,               // In game specific units (ETS2: €, ATS: $)
+    "revenue": 6878,              // In game specific units (ETS2: €, ATS: $)
+    "xp": 120                     // XP received
+    "time": 234                   // Time spend on the job in game minutes
     "maxSpeed": 0.0,              // Maximum  speed during the delivery (can be negative)
     "fuelConsumed": 0.0,          // Liters
+    "autoPark": false,            // Was auto parking used
+    "autoLoad": false,            // Was auto loading used (always true for non cargo market jobs)
     "distance": {
         "driven": 0.0,            // Kilometers
         "planned": 248            // Planned trip distance kilometers
+    },
+    "trailer": {
+        "id": "scs_box.moving_floor.chassis_stwx2esii"
+        "accessoryId": ""
+    },
+    "truck": {
+        "id": "vehicle.scania.streamline",
+        "name": "Streamline",
+        "wheels": 6,
+        "brand": {
+            "id": "scania",
+            "name": "Scania"
+        }
     },
     "cargo": {
         "id": "paper",
@@ -118,6 +143,36 @@ Below is an example of JSON format for a job.
     }
 }
 ```
+
+#### Status
+
+Description of job status:
+
+```
+0 = FreeAsWind
+1 = OnJob
+2 = Cancelled
+3 = Delivered
+```
+
+**Note:** Job with a status `0` should not ever be sent to the API, if that
+happens it's a bug.
+
+#### Types
+
+Description of job types:
+
+```
+0 = Unknown
+1 = CargoMarket
+2 = QuickJob
+3 = FreightMarket
+4 = ExternalContract
+5 = ExternalMarket
+```
+
+**Note:** If job has status of `0` it's most likely bug and an Issue should
+be opened if there is no open issue of it already.
 
 ### Truck
 

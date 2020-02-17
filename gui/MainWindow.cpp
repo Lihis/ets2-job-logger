@@ -30,7 +30,7 @@ MainWindow::MainWindow(Settings *settings) :
 base::MainWindow(nullptr),
 m_sender(nullptr),
 m_settings(settings),
-m_job(Game::Unknown),
+m_job(),
 m_odometerOnStart(-1.f),
 m_fuelOnStart(-1.f),
 m_socket_running(false)
@@ -70,6 +70,10 @@ m_socket_running(false)
     Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(MainWindow::on_close));
     Connect(wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler(MainWindow::on_job_update));
     Bind(wxEVT_THREAD, &MainWindow::on_sender_update, this);
+
+    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
+    event.SetInt(static_cast<int>(PacketType::Job));
+    AddPendingEvent(event);
 }
 
 MainWindow::~MainWindow() {
@@ -86,8 +90,9 @@ void MainWindow::on_job_update(wxCommandEvent &event) {
     const auto type = static_cast<PacketType>(event.GetInt());
 
     if (type == PacketType::Job) {
-        m_lblCargo->SetLabel(wxString::FromUTF8(m_job.cargo.name.c_str()));
         if (m_job.status != JobStatus::FreeAsWind) {
+            m_lblCargo->SetLabel(wxString::FromUTF8(m_job.cargo.name.c_str()));
+
             wxString origin(wxString::FromUTF8(m_job.source.city.name.c_str()));
             wxString sender(wxString::FromUTF8(m_job.source.company.name.c_str()));
             m_lblOrigin->SetLabel(origin + (sender.empty() ? "" : " (" + sender + ")"));
@@ -96,6 +101,7 @@ void MainWindow::on_job_update(wxCommandEvent &event) {
             wxString receiver(wxString::FromUTF8(m_job.destination.company.name.c_str()));
             m_lblDestination->SetLabel(destination + (receiver.empty() ? "" : " (" + receiver + ")"));
         } else {
+            m_lblCargo->SetLabel("-");
             m_lblOrigin->SetLabel("-");
             m_lblDestination->SetLabel("-");
         }
@@ -212,17 +218,14 @@ void MainWindow::socket_run() {
 void MainWindow::socket_connect() {
     wxSleep(1);
     websocketpp::lib::error_code ec;
-    m_connection = m_client.get_connection("ws://127.0.0.1:" + std::to_string(WEBSOCK_PORT), ec);
+    std::string uri("ws://127.0.0.1:" + std::to_string(WEBSOCK_PORT));
+    WebsocketClient::connection_ptr con = m_client.get_connection(uri, ec);
     if (!ec) {
-        m_client.connect(m_connection);
+        m_client.connect(con);
     }
 }
 
 void MainWindow::socket_on_fail() {
-    m_job = job_t(m_job.game);
-    wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
-    event.SetInt(static_cast<int>(PacketType::Job));
-    AddPendingEvent(event);
     socket_connect();
 }
 
@@ -250,7 +253,7 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
         }
 
         if (m_job.status == JobStatus::Cancelled || m_job.status == JobStatus::Delivered) {
-            m_job = job_t(m_job.game);
+            m_job = job_t();
             m_odometerOnStart = -1.f;
             m_fuelOnStart = -1.f;
         }
@@ -293,7 +296,7 @@ void MainWindow::socket_on_message(const websocketpp::connection_hdl &hdl,
 }
 
 void MainWindow::socket_on_close() {
-    m_job = job_t(m_job.game);
+    m_job = job_t();
     wxCommandEvent event(wxEVT_COMMAND_TEXT_UPDATED);
     event.SetInt(static_cast<int>(PacketType::Job));
     AddPendingEvent(event);

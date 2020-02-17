@@ -55,9 +55,9 @@ MSGPACK_ADD_ENUM(Game)
 
 struct version_t {
     explicit version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
-        this->major = 0;
-        this->minor = 0;
-        this->patch = 0;
+        this->major = major;
+        this->minor = minor;
+        this->patch = patch;
     }
 
     uint8_t major;
@@ -68,9 +68,7 @@ struct version_t {
 };
 
 struct id_name_t {
-    id_name_t() {
-        id = "";
-        name = "";
+    id_name_t() : id(), name() {
     }
 
     std::string id;
@@ -87,6 +85,7 @@ struct id_name_t {
 };
 typedef struct id_name_t city_t;
 typedef struct id_name_t company_t;
+typedef struct id_name_t brand_t;
 
 struct source_destination_t {
     city_t city;
@@ -109,23 +108,19 @@ struct source_destination_t {
 typedef source_destination_t source_t;
 typedef source_destination_t destination_t;
 
-struct truck_t {
-    truck_t() : odometer(-1.f), fuel(-1.f), speed(0.f), x(0.f), y(0.f), z(0.f), heading(0.f) {
+struct position_t {
+    position_t() : x(0.f), y(0.f), z(0.f), heading(0.f) {
     }
 
-    float odometer;
-    float fuel;
-    float speed;
     double x;
     double y;
     double z;
     float heading;
 
-    MSGPACK_DEFINE(odometer, fuel, speed, x, y, z, heading);
+    MSGPACK_DEFINE(x, y, z, heading);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
-        root["speed"] = speed;
         root["x"] = x;
         root["y"] = y;
         root["z"] = z;
@@ -134,22 +129,75 @@ struct truck_t {
 #endif
 };
 
-enum JobStatus {
+struct trailer_t {
+    trailer_t() : id(), accessoryId() {
+    }
+
+    std::string id;
+    std::string accessoryId;
+
+    MSGPACK_DEFINE(id, accessoryId);
+};
+
+struct truck_t {
+    truck_t() : id(), name(), wheels(0), brand(), odometer(-1.f), fuel(-1.f), speed(0.f), position() {
+    }
+
+    std::string id;
+    std::string name;
+    uint32_t wheels;
+    brand_t brand;
+    float odometer;
+    float fuel;
+    float speed;
+    position_t position;
+
+    MSGPACK_DEFINE(id, name, wheels, brand, odometer, fuel, speed, position);
+
+#ifndef PLUGIN_INTERNAL
+    void Serialize(Json::Value &root) const {
+        root["id"] = id;
+        root["name"] = name;
+        root["wheels"] = Json::Value::UInt(wheels);
+        root["brand"] = Json::Value();
+        brand.Serialize(root["brand"]);
+    }
+#endif
+};
+
+enum class JobStatus {
     FreeAsWind = 0,
     OnJob = 1,
     Cancelled = 2,
     Delivered = 3
 };
-MSGPACK_ADD_ENUM(JobStatus);
+MSGPACK_ADD_ENUM(JobStatus)
+
+enum class JobType {
+    Unknown = 0,
+    CargoMarket = 1,
+    QuickJob = 2,
+    FreightMarket = 3,
+    ExternalContract = 4,
+    ExternalMarket = 5
+};
+MSGPACK_ADD_ENUM(JobType)
 
 struct job_t {
     explicit job_t(const Game &game = Game::Unknown) {
         this->game = game;
         status = JobStatus::FreeAsWind;
+        type = JobType::Unknown;
         isSpecial = false;
-        fuelConsumed = 0.f;
-        maxSpeed = 0.f;
         income = 0;
+        revenue = 0;
+        xp = 0;
+        timeSpend = 0;
+        maxSpeed = 0.f;
+        fuelConsumed = 0.f;
+        autoPark = false;
+        autoLoad = false;
+        distance = {};
         trailer = {};
         cargo = {};
         source = {};
@@ -158,34 +206,32 @@ struct job_t {
 
     Game game;
     JobStatus status;
+    JobType type;
     bool isSpecial;
+    uint64_t income;
+    int64_t revenue;
+    int32_t xp;
+    uint32_t timeSpend;
+    float maxSpeed;
+    float fuelConsumed;
+    bool autoPark;
+    bool autoLoad;
 
     struct distance_t {
+        distance_t() : driven(0.f), planned(0) {
+        }
+
         float driven;
         uint32_t planned;
 
         MSGPACK_DEFINE(driven, planned);
-    } distance = {};
-    float fuelConsumed;
-    float maxSpeed;
+    } distance;
 
-    uint64_t income;
-
-    struct trailer_t {
-        trailer_t() {
-            connected = false;
-        }
-
-        bool connected;
-        MSGPACK_DEFINE(connected)
-    } trailer;
+    trailer_t trailer;
+    truck_t truck;
 
     struct cargo_t {
-        cargo_t() {
-            id = "";
-            name = "-";
-            mass = 0.f;
-            damage = 0.f;
+        cargo_t() : id(), name(), mass(0.f), damage(0.f) {
         }
 
         std::string id;
@@ -198,7 +244,7 @@ struct job_t {
     source_t source;
     destination_t destination;
 
-    MSGPACK_DEFINE(game, status, isSpecial, distance, fuelConsumed, maxSpeed, income, trailer, cargo, source, destination);
+    MSGPACK_DEFINE(game, status, type, isSpecial, income, revenue, xp, timeSpend, maxSpeed, fuelConsumed, autoPark, autoLoad, distance, trailer, truck, cargo, source, destination);
 
 #ifndef PLUGIN_INTERNAL
     void Serialize(Json::Value &root) const {
@@ -212,16 +258,21 @@ struct job_t {
                 game_name = "ats";
                 break;
             case Game::Unknown:
-            default:
                 break;
         }
 
         root["game"] = game_name;
         root["status"] = (uint8_t)status;
+        root["type"] = (uint8_t)type;
         root["isSpecial"] = isSpecial;
         root["income"] = Json::Value::UInt64(income);
+        root["revenue"] = Json::Value::Int64(revenue);
+        root["xp"] = Json::Value::Int(xp);
+        root["time"] = Json::Value::UInt(timeSpend);
         root["maxSpeed"] = maxSpeed;
         root["fuelConsumed"] = fuelConsumed;
+        root["autoPark"] = autoPark;
+        root["autoLoad"] = autoLoad;
 
         Json::Value distanceObj;
         distanceObj["driven"] = distance.driven;
@@ -234,6 +285,14 @@ struct job_t {
         cargoObj["mass"] = cargo.mass;
         cargoObj["damage"] = cargo.damage;
         root["cargo"] = cargoObj;
+
+        Json::Value trailerObj;
+        trailerObj["id"] = trailer.id;
+        trailerObj["accessoryId"] = trailer.accessoryId;
+        root["trailer"] = trailerObj;
+
+        root["truck"] = Json::Value();
+        truck.Serialize(root["truck"]);
 
         root["source"] = Json::Value();
         source.Serialize(root["source"], isSpecial);

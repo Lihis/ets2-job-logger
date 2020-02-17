@@ -129,6 +129,8 @@ bool Settings::SettingsLoad() {
         pluginPathOk &= PluginInstaller::CheckGamePath(m_ats_path);
     }
 
+    delete config;
+
     return (pluginPathOk && !m_url.empty() && !m_token.empty());
 }
 

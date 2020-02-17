@@ -58,11 +58,11 @@ m_mainWindow(mainWindow)
     m_checkBoxRunInBackground->SetValue(m_settings->GetRunInBackground());
 }
 
-void SettingsWindow::on_install_ets2(wxCommandEvent &event) {
+void SettingsWindow::on_install_ets2(wxCommandEvent &/*event*/) {
     m_dirCtrlETS2Path->Enable(m_checkBoxETS2->IsChecked());
 }
 
-void SettingsWindow::on_install_ats(wxCommandEvent &event) {
+void SettingsWindow::on_install_ats(wxCommandEvent &/*event*/) {
     m_dirCtrlATSPath->Enable(m_checkBoxATS->IsChecked());
 }
 

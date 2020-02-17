@@ -231,12 +231,14 @@ void JobSender::send_truck() {
         m_truck_queue.pop_front();
     }
 
-    truck.Serialize(json);
+    json["speed"] = truck.speed;
+    truck.position.Serialize(json);
 
     send_data(url, json.toStyledString().c_str(), response, error);
 }
 
 #ifdef _WIN32
+#pragma warning(suppress: 4138)
 int JobSender::add_certificates(void */*curl*/, void *sslctx, void *userdata) {
     auto certStore = SSL_CTX_get_cert_store(reinterpret_cast<SSL_CTX *>(sslctx));
     auto obj = static_cast<JobSender *>(userdata);
