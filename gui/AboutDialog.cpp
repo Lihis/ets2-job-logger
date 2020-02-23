@@ -36,5 +36,5 @@ AboutDialog::AboutDialog(wxWindow *parent) : base::AboutDialog(parent) {
     auto titleFont = m_staticTextName->GetFont();
     titleFont.SetPointSize(titleFont.GetPointSize() + 4);
     m_staticTextName->SetFont(titleFont);
-    m_staticTextVersion->SetLabel("v" APP_VERSION_FULL);
+    m_staticTextVersion->SetLabel("v" APP_VERSION_FULL " (" GIT_SHA1 ")");
 }
