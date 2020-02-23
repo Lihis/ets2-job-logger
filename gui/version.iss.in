@@ -1,0 +1,1 @@
+#define APP_VERSION_FULL  = "@PROJECT_VERSION@";

@@ -1,0 +1,22 @@
+#include "@CMAKE_CURRENT_BINARY_DIR@\gui\version.iss"
+
+[Setup]
+AppName=ETS2 Job Logger
+AppVersion={#APP_VERSION_FULL}
+LicenseFile=@CMAKE_CURRENT_LIST_DIR@\LICENSE.md
+OutputBaseFilename=ETS2JobLogger-v{#APP_VERSION_FULL}
+UsePreviousAppDir=yes
+PrivilegesRequired=none
+DefaultDirName={userappdata}\ets2-job-logger
+DefaultGroupName=ETS2 Job Logger
+
+[Tasks]
+Name: AutoRunRegistry; Description: "Start on startup"; GroupDescription: "{cm:AdditionalIcons}"
+
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "ETS2JobLogger"; ValueData: "{app}\ets2-job-logger.exe --minimized"; Tasks: AutoRunRegistry;
+
+[Files]
+Source: "@CMAKE_CURRENT_LIST_DIR@\LICENSE.md"; DestDir: "{app}"; DestName: "License.txt"
+Source: "@CMAKE_CURRENT_BINARY_DIR@\bin\ets2-job-logger.exe"; DestDir: "{app}"
+Source: "@CMAKE_CURRENT_BINARY_DIR@\bin\ets2-job-logger.dll"; DestDir: "{app}\win_x64"
