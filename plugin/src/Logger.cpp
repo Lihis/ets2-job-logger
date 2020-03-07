@@ -238,6 +238,19 @@ SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
         m_job.status = JobStatus::Cancelled;
     } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_job_delivered) {
         m_job.status = JobStatus::Delivered;
+    } else if (event_id == SCS_TELEMETRY_GAMEPLAY_EVENT_player_fined) {
+        fine_t fine;
+        for (auto attr = event_info->attributes; attr->name; attr++) {
+            std::string name(attr->name);
+
+            if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_offence) {
+                fine.type = string_to_fine(attr->value.value_string.value);
+            } else if (name == SCS_TELEMETRY_GAMEPLAY_EVENT_ATTRIBUTE_fine_amount) {
+                fine.amount = attr->value.value_s64.value;
+            }
+        }
+
+        send_fine(fine);
     } else {
         return;
     }
@@ -266,6 +279,34 @@ SCSAPI_VOID Logger::gameplay(const scs_telemetry_gameplay_event_t *event_info) {
         send_job();
         m_job = job_t(m_game);
     }
+}
+
+Fine Logger::string_to_fine(const std::string &str) {
+    Fine ret = Fine::Unknown;
+
+    if (str == "crash") {
+        ret = Fine::Crash;
+    } else if (str == "avoid_sleeping") {
+        ret = Fine::AvoidSleeping;
+    } else if (str == "wrong_way") {
+        ret = Fine::WrongWay;
+    } else if (str == "speeding_camera") {
+        ret = Fine::SpeedingCamera;
+    } else if (str == "no_lights") {
+        ret = Fine::NoLights;
+    } else if (str == "red_signal") {
+        ret = Fine::RedSignal;
+    } else if (str == "speeding") {
+        ret = Fine::Speeding;
+    } else if (str == "avoid_weighing") {
+        ret = Fine::AvoidWeighing;
+    } else if (str == "illegal_trailer") {
+        ret = Fine::IllegalTrailer;
+    } else if (str == "generic") {
+        ret = Fine::Generic;
+    }
+
+    return ret;
 }
 
 void Logger::run() {
@@ -299,6 +340,16 @@ void Logger::send_truck_info() {
     std::stringstream buffer;
     msgpack::pack(buffer, PacketType::Truck);
     msgpack::pack(buffer, m_job.truck);
+
+    send(buffer.str());
+}
+
+void Logger::send_fine(const fine_t &fine) {
+    LockGuard lock(m_lock);
+
+    std::stringstream buffer;
+    msgpack::pack(buffer, PacketType::Fine);
+    msgpack::pack(buffer, fine);
 
     send(buffer.str());
 }

@@ -42,7 +42,8 @@ enum class PacketType {
     Version = 1,
     Job = 2,
     Truck = 3,
-    CargoDamage = 4
+    CargoDamage = 4,
+    Fine = 5
 };
 MSGPACK_ADD_ENUM(PacketType)
 
@@ -52,6 +53,22 @@ enum class Game {
     ATS = 2
 };
 MSGPACK_ADD_ENUM(Game)
+
+enum class Fine {
+    Unknown = 0,
+    Crash = 1,
+    AvoidSleeping = 2,
+    WrongWay = 3,
+    SpeedingCamera = 4,
+    Speeding = 5,
+    NoLights = 6,
+    RedSignal = 7,
+    Sleeping = 8,
+    AvoidWeighing = 9,
+    IllegalTrailer = 10,
+    Generic = 11
+};
+MSGPACK_ADD_ENUM(Fine);
 
 struct version_t {
     explicit version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
@@ -65,6 +82,23 @@ struct version_t {
     uint8_t patch;
 
     MSGPACK_DEFINE(major, minor, patch);
+};
+
+struct fine_t {
+    fine_t() : type(Fine::Unknown), amount(0) {
+    }
+
+    Fine type;
+    int64_t amount;
+
+    MSGPACK_DEFINE(type, amount);
+
+#ifndef PLUGIN_INTERNAL
+    void Serialize(Json::Value &root) const {
+        root["type"] = (uint8_t)type;
+        root["amount"] = Json::Value::Int64(amount);
+    }
+#endif
 };
 
 struct id_name_t {

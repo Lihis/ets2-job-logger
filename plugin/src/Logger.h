@@ -127,6 +127,14 @@ public:
 
 private:
     /**
+     * Fine string to Fine type
+     *
+     * @param str
+     * @return Fine - Fine type
+     */
+    Fine string_to_fine(const std::string &str);
+
+    /**
      * Websocket server mainloop
      */
     void run();
@@ -145,6 +153,11 @@ private:
      * Send truck information
      */
     void send_truck_info();
+
+    /**
+     * Send received fine
+     */
+    void send_fine(const fine_t &fine);
 
     /**
      * Send data via websocket
