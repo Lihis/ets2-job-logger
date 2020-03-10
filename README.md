@@ -13,12 +13,16 @@ ETS2 Job Logger consists of wxWidgets based application and ETS2 plugin.
 
 Plugin sends job related data to the application via websocket. Application then
 sends a POST request to the specified API URL when a new job is taken or a
-current job is delivered. See `JSON Format` paragraph for details of the format
-sent to your API endpoint.
+current job is delivered. See [API Documentation](#api-documentation) paragraph
+for details of the format sent to your API endpoint.
 
 Applications stores job information in memory until it's sent to your API. If
 sending failed, eg. your API did not return expected HTTP code, applications
 tries to send it again later until it's sent successfully.
+
+## Chat
+
+[![IRC freenode #ets2joblogger](https://raster.shields.io/badge/IRC%20freenode-%23ets2joblogger-blue)](https://webchat.freenode.net/?channels=%23ets2joblogger)
 
 ## Contributing
 
