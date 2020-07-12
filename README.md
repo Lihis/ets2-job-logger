@@ -222,13 +222,16 @@ Valid `Types` are:
 2  = AvoidSleeping
 3  = WrongWay
 4  = SpeedingCamera
-5  = Speeding
-6  = NoLights
-7  = RedSignal
-8  = Sleeping
-9  = AvoidWeighing
-10 = IllegalTrailer
-11 = Generic = 11
+5  = NoLights
+6  = RedSignal
+7  = Speeding
+8  = AvoidWeighing
+9  = IllegalTrailer
+10 = AvoidInspection
+11 = IllegalBorderCrossing
+12 = HardShoulderViolation
+13 = DamagedVehicleUsage
+14 = Generic
 ```
 
 If API receives fine with type `Unknown` then create an issue (if does not

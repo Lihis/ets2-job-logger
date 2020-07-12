@@ -302,6 +302,14 @@ Fine Logger::string_to_fine(const std::string &str) {
         ret = Fine::AvoidWeighing;
     } else if (str == "illegal_trailer") {
         ret = Fine::IllegalTrailer;
+    } else if (str == "avoid_inspection") {
+        ret = Fine::AvoidInspection;
+    } else if (str == "illegal_border_crossing") {
+        ret = Fine::IllegalBorderCrossing;
+    } else if (str == "hard_shoulder_violation") {
+        ret = Fine::HardShoulderViolation;
+    } else if (str == "damaged_vehicle_usage") {
+        ret = Fine::DamagedVehicleUsage;
     } else if (str == "generic") {
         ret = Fine::Generic;
     }

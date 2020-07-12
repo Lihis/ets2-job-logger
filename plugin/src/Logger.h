@@ -132,7 +132,7 @@ private:
      * @param str
      * @return Fine - Fine type
      */
-    Fine string_to_fine(const std::string &str);
+    static Fine string_to_fine(const std::string &str);
 
     /**
      * Websocket server mainloop
