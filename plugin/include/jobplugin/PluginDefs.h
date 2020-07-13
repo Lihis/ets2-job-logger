@@ -60,13 +60,16 @@ enum class Fine {
     AvoidSleeping = 2,
     WrongWay = 3,
     SpeedingCamera = 4,
-    Speeding = 5,
-    NoLights = 6,
-    RedSignal = 7,
-    Sleeping = 8,
-    AvoidWeighing = 9,
-    IllegalTrailer = 10,
-    Generic = 11
+    NoLights = 5,
+    RedSignal = 6,
+    Speeding = 7,
+    AvoidWeighing = 8,
+    IllegalTrailer = 9,
+    AvoidInspection = 10,
+    IllegalBorderCrossing = 11,
+    HardShoulderViolation = 12,
+    DamagedVehicleUsage = 13,
+    Generic = 14
 };
 MSGPACK_ADD_ENUM(Fine);
 
