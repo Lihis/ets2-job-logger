@@ -23,6 +23,7 @@ tries to send it again later until it's sent successfully.
 ## Chat
 
 [![IRC freenode #ets2joblogger](https://raster.shields.io/badge/IRC%20freenode-%23ets2joblogger-blue)](https://webchat.freenode.net/?channels=%23ets2joblogger)
+[![Discord](https://img.shields.io/badge/Discord-join-blue)](https://discord.gg/wyABv29)
 
 ## Contributing
 
