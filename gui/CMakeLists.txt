@@ -126,8 +126,7 @@ target_include_directories(ets2-job-logger
 target_compile_options(ets2-job-logger
                        PRIVATE
                        ${wxWidgets_CFLAGS_OTHER}
-                       ${wxWidgets_CFLAGS_OTHER}
-                       ${JSON_CPP_CFLAGS_OTHER}
+                       ${JSONCPP_CFLAGS_OTHER}
                        )
 
 if(DEVELOPMENT)
