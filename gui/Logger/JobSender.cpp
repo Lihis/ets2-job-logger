@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 #include "JobSender.h"
+#include "Version.h"
 #include <wx/time.h>
 #include <curl/curl.h>
 #include <sstream>
@@ -30,6 +31,7 @@
 #endif
 
 #define API_VERSION "v1"
+#define USER_AGENT "ets2-job-logger v" APP_VERSION_FULL
 
 JobSender::JobSender(wxEvtHandler *handler, Settings *settings) :
 m_handler(handler),
@@ -321,6 +323,7 @@ long JobSender::send_data(const std::string &url, const char *data, wxString &re
     header = curl_slist_append(header, wxString("Authorization-token: " + token).c_str());
 
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
