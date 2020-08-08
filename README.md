@@ -260,7 +260,7 @@ conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
 ```
 
 - Open project in Visual Studio via `File -> Open -> CMake...` by choosing the
-  `CMakeListst.xt`.
+  `CMakeListst.txt`.
 - Edit CMake options via `CMake -> Change CMake settings -> CMakelists.txt`
   - Change `generator` value to `Visual Studio 15 2017 Win64`.
   - Remove `-v` from `buildCommandArgs` or specify valid verbosity level.
