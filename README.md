@@ -252,6 +252,9 @@ exist yet) as it could indicate game has a new fine type.
 
 ### Windows
 
+Building has been tested with `Visual Studio 2017` and the following guide
+is written for it.
+
 Install `conan`. Open `PowerShell` and add remotes for `conan`:
 
 ```
