@@ -152,7 +152,7 @@ void MainWindow::server_changed() {
     m_sender->serverChanged();
 }
 
-void MainWindow::on_about(wxCommandEvent &event) {
+void MainWindow::on_about(wxCommandEvent &/*event*/) {
     AboutDialog dialog(this);
     dialog.ShowModal();
 }
