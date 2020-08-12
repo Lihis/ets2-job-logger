@@ -102,6 +102,14 @@ private:
     std::string generate_url(const std::string &endpoint);
 
     /**
+     * Convert Json::Value @p json to string
+     *
+     * @param json - Json::Value to convert
+     * @return std::string
+     */
+    static std::string json_to_string(const Json::Value &json);
+
+    /**
      * Query server of it's capabilities
      *
      * @return bool - true if query successful, false otherwise

@@ -23,6 +23,7 @@
 #include <curl/curl.h>
 #include <sstream>
 #include <json/reader.h>
+#include <json/writer.h>
 #ifdef _WIN32
 #include <wincrypt.h>
 #include <windows.h>
@@ -170,6 +171,14 @@ std::string JobSender::generate_url(const std::string &endpoint) {
     return url;
 }
 
+std::string JobSender::json_to_string(const Json::Value &json) {
+    Json::StreamWriterBuilder builder;
+
+    builder["indentation"] = "";
+
+    return Json::writeString(builder, json);
+}
+
 bool JobSender::query_capabilities() {
     std::string url = generate_url("capabilities");
     wxString response;
@@ -214,7 +223,7 @@ bool JobSender::send_job() {
 
     job.Serialize(json);
 
-    long code = send_data(url, json.toStyledString().c_str(), response, error);
+    long code = send_data(url, json_to_string(json).c_str(), response, error);
     if (code != 200L) {
         auto event = new wxThreadEvent(wxEVT_COMMAND_THREAD, wxID_ABORT);
         event->SetString("API returned error code: " + std::to_string(code) + " " + error);
@@ -247,7 +256,7 @@ void JobSender::send_truck() {
     json["speed"] = truck.speed;
     truck.position.Serialize(json);
 
-    send_data(url, json.toStyledString().c_str(), response, error);
+    send_data(url, json_to_string(json).c_str(), response, error);
 }
 
 void JobSender::send_fine() {
@@ -268,7 +277,7 @@ void JobSender::send_fine() {
 
     fine.Serialize(json);
 
-    long code = send_data(url, json.toStyledString().c_str(), response, error);
+    long code = send_data(url, json_to_string(json).c_str(), response, error);
     if (code != 200L) {
         LockGuard lock(m_lock);
         m_fine_queue.push_front(fine);
