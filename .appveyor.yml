@@ -3,11 +3,12 @@ image:
 platform: x64
 
 install:
-  - set PATH=%PATH%;C:\Python37-x64\Scripts
+  - set PATH=%PATH%;%PYTHON%\Scripts
   - pip.exe install conan
   - conan user
-  - conan remote add public-conan https://api.bintray.com/conan/bincrafters/public-conan
-  - conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
+  - conan --version
+  - conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
+  - conan config set general.revisions_enabled=1
   - choco install -y innosetup
   - set PATH=%PATH%;'C:\Program Files (x86)\Inno Setup 6';
   - cd "%APPVEYOR_BUILD_FOLDER%"
