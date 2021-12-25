@@ -1,6 +1,6 @@
 kind: pipeline
 type: docker
-name: debian
+name: Debian stable
 
 platform:
   arch: amd64
@@ -14,12 +14,12 @@ steps:
       - git submodule update --recursive --remote
 
   - name: build
-    image: debian:buster
+    image: debian:stable
     commands:
       - apt-get update -yq
       - apt-get install -yq build-essential pkg-config cmake libmsgpack-dev
         libboost-dev libboost-system-dev libwebsocketpp-dev zlib1g-dev
-        libcurl4-openssl-dev libssl-dev libjsoncpp-dev libwxgtk3.0-dev
+        libcurl4-openssl-dev libssl-dev libjsoncpp-dev libwxgtk3.0-gtk3-dev
       - mkdir build && cd build
       - cmake ..
       - make -j$(nproc)
