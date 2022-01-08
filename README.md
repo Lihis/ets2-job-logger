@@ -258,8 +258,13 @@ is written for it.
 Install `conan`. Open `PowerShell` and add remotes for `conan`:
 
 ```
-conan remote add public-conan https://api.bintray.com/conan/bincrafters/public-conan
-conan remote add theirix https://api.bintray.com/conan/bincrafters/theirix
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+```
+
+and enable versioning if you haven't already:
+
+```
+conan config set general.revisions_enabled=1
 ```
 
 - Open project in Visual Studio via `File -> Open -> CMake...` by choosing the

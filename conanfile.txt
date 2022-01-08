@@ -1,10 +1,13 @@
 [requires]
-msgpack/3.2.1@bincrafters/stable
-zlib/1.2.11@conan/stable
-websocketpp/0.8.1@bincrafters/stable
-libcurl/7.66.0@bincrafters/stable
-jsoncpp/1.8.4@theirix/stable
-wxwidgets/3.1.2@bincrafters/stable
+# Force boost version 1.78 as it's required by msgpack-cxx
+# but websocketpp requires 1.77
+boost/1.78.0
+msgpack-cxx/4.0.3
+zlib/1.2.11
+websocketpp/0.8.2
+libcurl/7.66.0
+jsoncpp/1.9.5
+wxwidgets/3.1.5@bincrafters/stable
 
 [generators]
 cmake
