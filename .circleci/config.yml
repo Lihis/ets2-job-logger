@@ -1,0 +1,48 @@
+version: 2.1
+
+jobs:
+  debian:
+    docker:
+      - image: debian:stable
+    steps:
+      - run: apt-get update -yq
+      - run: apt-get install -yq git build-essential pkg-config cmake
+             libmsgpack-dev libboost-dev libboost-system-dev libwebsocketpp-dev
+             zlib1g-dev libcurl4-openssl-dev libssl-dev libjsoncpp-dev
+             libwxgtk3.0-gtk3-dev
+      - checkout
+      - run: git submodule update --init --recursive
+      - run: cmake -B build
+      - run: make -j$(nproc) -C build
+  archlinux:
+    docker:
+      - image: archlinux:latest
+    steps:
+      - run: pacman -Syu --noconfirm --noprogressbar --needed git openssh
+             base-devel cmake msgpack-cxx boost websocketpp zlib curl openssl
+             jsoncpp wxgtk3 webkit2gtk
+      # FIXME: this shouldn't be necessary
+      - run: ln -s /usr/bin/wx-config-gtk3 /usr/bin/wx-config
+      - checkout
+      - run: git submodule update --init --recursive
+      - run: cmake -B build
+      - run: make -j$(nproc) -C build
+  fedora:
+    docker:
+      - image: fedora:latest
+    steps:
+      - run: dnf install -y git gcc-g++ pkgconfig cmake msgpack-devel
+             boost-devel websocketpp-devel zlib-devel openssl-devel
+             libcurl-devel jsoncpp-devel wxGTK3-devel
+      - checkout
+      - run: git submodule update --init --recursive
+      - run: cmake -B build
+      - run: make -j$(nproc) -C build
+
+workflows:
+  version: 2
+  linux:
+    jobs:
+      - debian
+      - archlinux
+      - fedora
