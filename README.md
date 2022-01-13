@@ -258,7 +258,7 @@ is written for it.
 Install `conan`. Open `PowerShell` and add remotes for `conan`:
 
 ```
-conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
 ```
 
 and enable versioning if you haven't already:
