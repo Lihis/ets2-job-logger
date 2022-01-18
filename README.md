@@ -16,8 +16,8 @@ sends a POST request to the specified API URL when a new job is taken or a
 current job is delivered. If you're interested of implementing the API on your
 website then refer to [API Guide](docs/API.md).
 
-Applications stores job information in memory until it's sent to your API. If
-sending failed, eg. your API did not return expected HTTP code, applications
+Application stores job information in memory until it's sent to your API. If
+sending failed, e.g. your API did not return expected HTTP code, applications
 tries to send it again later until it's sent successfully.
 
 ## Chat

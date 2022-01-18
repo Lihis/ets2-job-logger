@@ -21,8 +21,8 @@ to URL with version appended to it.
 
 ## Token
 
-Requests sent to the API will contain an header `Authorization-token`. The
-value of the token is the value set in the settings to the `API Token` field.
+Requests sent to the API contains a header `Authorization-token`. The value of
+the header is the value of `API Token` from application settings.
 
 Application doesn't enforce any requirements for the token except that it is
 set.

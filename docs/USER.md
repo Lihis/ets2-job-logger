@@ -10,8 +10,8 @@ support for it.
 On first start after installation configuration needs to be set, refer to
 [Settings](#Settings) section for information of the settings.
 
-Otherwise usage of the application is simple; start the application before
-you start playing and keep it running until you stop playing.
+Otherwise, all what you need to do is to start the application before you
+start playing and keep it running until you stop.
 
 **Note:** Currently it is assumed that jobs are always delivered in one go,
 i.e. game is not closed in the middle of the delivery.
