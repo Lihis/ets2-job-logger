@@ -1,5 +1,16 @@
 project(plugin VERSION 0.1.0)
 
+if(MSVC)
+    find_package(jsoncpp CONFIG REQUIRED)
+    set(JSONCPP_LIBRARIES jsoncpp_lib_static)
+    set(JSONCPP_INCLUDE_DIRS jsoncpp_lib_static)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JSONCPP jsoncpp REQUIRED)
+endif()
+find_package(msgpack REQUIRED)
+find_package(websocketpp REQUIRED)
+
 set(SRCS
     include/jobplugin/PluginDefs.h
 
@@ -40,9 +51,6 @@ else()
 endif()
 add_library(ets2joblogger::plugin ALIAS ${PROJECT_NAME})
 
-find_package(msgpack REQUIRED)
-find_package(websocketpp REQUIRED)
-
 if(WIN32)
     target_compile_options(${PROJECT_NAME}
                            PRIVATE
@@ -64,6 +72,8 @@ endif()
 target_link_libraries(${PROJECT_NAME}
                       PRIVATE
                       scs::sdk
+                      INTERFACE
+                      ${JSONCPP_LIBRARIES}
                       )
 
 target_include_directories(${PROJECT_NAME}
@@ -73,6 +83,8 @@ target_include_directories(${PROJECT_NAME}
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
                            PRIVATE
                            "${WEBSOCKETPP_INCLUDE_DIR}"
+                           INTERFACE
+                           "${JSONCPP_INCLUDE_DIRS}"
                            )
 
 target_compile_options(${PROJECT_NAME}
