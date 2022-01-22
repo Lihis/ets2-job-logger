@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
+option(BUILD_TESTS "Build tests" ON)
+
 if(MSVC)
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
@@ -19,3 +21,7 @@ endif()
 add_subdirectory(scs-sdk)
 add_subdirectory(plugin)
 add_subdirectory(gui)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
