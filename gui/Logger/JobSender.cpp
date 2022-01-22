@@ -221,9 +221,7 @@ bool JobSender::send_job() {
         m_job_queue.pop_back();
     }
 
-    job.Serialize(json);
-
-    long code = send_data(url, json_to_string(json).c_str(), response, error);
+    long code = send_data(url, job.ToString().c_str(), response, error);
     if (code != 200L) {
         auto event = new wxThreadEvent(wxEVT_COMMAND_THREAD, wxID_ABORT);
         event->SetString("API returned error code: " + std::to_string(code) + " " + error);
@@ -253,8 +251,8 @@ void JobSender::send_truck() {
         m_truck_queue.pop_front();
     }
 
+    json = truck.position.ToJson();
     json["speed"] = truck.speed;
-    truck.position.Serialize(json);
 
     send_data(url, json_to_string(json).c_str(), response, error);
 }
@@ -275,9 +273,7 @@ void JobSender::send_fine() {
         m_fine_queue.pop_front();
     }
 
-    fine.Serialize(json);
-
-    long code = send_data(url, json_to_string(json).c_str(), response, error);
+    long code = send_data(url,  fine.ToString().c_str(), response, error);
     if (code != 200L) {
         LockGuard lock(m_lock);
         m_fine_queue.push_front(fine);

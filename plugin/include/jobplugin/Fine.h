@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2019 Tomi Lähteenmäki <lihis@lihis.net>                    *
+ * Copyright (c) 2022 Tomi Lähteenmäki <lihis@lihis.net>                    *
  *                                                                          *
  * This program is free software; you can redistribute it and/or modify     *
  * it under the terms of the GNU General Public License as published by     *
@@ -17,37 +17,51 @@
  * MA 02110-1301, USA.                                                      *
  ****************************************************************************/
 
-#ifndef ETS2_JOB_LOGGER_PLUGINDEFS_H
-#define ETS2_JOB_LOGGER_PLUGINDEFS_H
+#ifndef ETS2_JOB_LOGGER_FINE_H
+#define ETS2_JOB_LOGGER_FINE_H
 
 /**
- * @file PluginDefs.h
- * @brief Shared header for plugin and application
- * @details Definition of data transported via WebSocket.
+ * @file Fine.h
+ * @brief Fine structure
  * @author Tomi Lähteenmäki
  * @license This project is licensed under GNU General Public License, Version 2
  */
 
-#include <string>
+#include <jobplugin/Serializable.h>
 #include <msgpack.hpp>
 
-#define WEBSOCK_PORT 20210
-
-enum class PacketType {
+enum class Fine {
     Unknown = 0,
-    Version = 1,
-    Job = 2,
-    Truck = 3,
-    CargoDamage = 4,
-    Fine = 5
+    Crash = 1,
+    AvoidSleeping = 2,
+    WrongWay = 3,
+    SpeedingCamera = 4,
+    NoLights = 5,
+    RedSignal = 6,
+    Speeding = 7,
+    AvoidWeighing = 8,
+    IllegalTrailer = 9,
+    AvoidInspection = 10,
+    IllegalBorderCrossing = 11,
+    HardShoulderViolation = 12,
+    DamagedVehicleUsage = 13,
+    Generic = 14
 };
-MSGPACK_ADD_ENUM(PacketType)
+MSGPACK_ADD_ENUM(Fine)
 
-enum class Game {
-    Unknown = 0,
-    ETS2 = 1,
-    ATS = 2
+struct fine_t : serializable_t {
+    fine_t() : type(Fine::Unknown), amount(0) {
+    }
+
+    Fine type;
+    int64_t amount;
+
+    MSGPACK_DEFINE(type, amount);
+
+#if WITH_SERIALIZATION
+    Json::Value ToJson() const final;
+    std::string ToString() const final;
+#endif
 };
-MSGPACK_ADD_ENUM(Game)
 
-#endif //ETS2_JOB_LOGGER_PLUGINDEFS_H
+#endif //ETS2_JOB_LOGGER_FINE_H

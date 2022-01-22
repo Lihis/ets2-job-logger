@@ -18,6 +18,7 @@
  ****************************************************************************/
 
 #include "Logger.h"
+#include <jobplugin/Version.h>
 #include <cmath>
 #include <msgpack.hpp>
 #include <scs/common/scssdk_telemetry_common_configs.h>
@@ -207,7 +208,7 @@ SCSAPI_VOID Logger::configuration(const scs_telemetry_configuration_t *event_inf
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_planned_distance_km) {
                 m_job.distance.planned = attr->value.value_u32.value;
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_special_job) {
-                m_job.isSpecial = attr->value.value_bool.value;
+                m_job.setSpecial(attr->value.value_bool.value);
             } else if (name == SCS_TELEMETRY_CONFIG_ATTRIBUTE_job_market) {
                 std::string type(attr->value.value_string.value);
                 if (type == "cargo_market") {

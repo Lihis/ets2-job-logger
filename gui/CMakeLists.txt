@@ -76,6 +76,7 @@ if(MSVC OR MINGW)
 endif()
 
 add_executable(ets2-job-logger WIN32 ${SOURCES})
+add_dependencies(ets2-job-logger plugin)
 
 if(MINGW)
     set(WIN32_LIBS -lws2_32 -lcrypt32)
@@ -90,7 +91,7 @@ endif()
 
 target_link_libraries(ets2-job-logger
                       PRIVATE
-                      ets2joblogger::plugin
+                      ets2joblogger::serialization
                       ${wxWidgets_LIBRARIES}
                       ${PNG_LIBRARIES}
                       ${Boost_LIBRARIES}

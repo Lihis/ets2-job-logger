@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2019 Tomi Lähteenmäki <lihis@lihis.net>                    *
+ * Copyright (c) 2022 Tomi Lähteenmäki <lihis@lihis.net>                    *
  *                                                                          *
  * This program is free software; you can redistribute it and/or modify     *
  * it under the terms of the GNU General Public License as published by     *
@@ -17,37 +17,27 @@
  * MA 02110-1301, USA.                                                      *
  ****************************************************************************/
 
-#ifndef ETS2_JOB_LOGGER_PLUGINDEFS_H
-#define ETS2_JOB_LOGGER_PLUGINDEFS_H
+#ifndef ETS2_JOB_LOGGER_SERIALIZABLE_H
+#define ETS2_JOB_LOGGER_SERIALIZABLE_H
 
-/**
- * @file PluginDefs.h
- * @brief Shared header for plugin and application
- * @details Definition of data transported via WebSocket.
- * @author Tomi Lähteenmäki
- * @license This project is licensed under GNU General Public License, Version 2
- */
+#if WITH_SERIALIZATION
+#include <json/value.h>
+#include <json/writer.h>
 
-#include <string>
-#include <msgpack.hpp>
+struct serializable_t {
+    virtual Json::Value ToJson() const = 0;
+    virtual std::string ToString() const = 0;
 
-#define WEBSOCK_PORT 20210
+    template<typename T>
+    static std::string ToString(const T* obj) {
+        Json::StreamWriterBuilder builder;
 
-enum class PacketType {
-    Unknown = 0,
-    Version = 1,
-    Job = 2,
-    Truck = 3,
-    CargoDamage = 4,
-    Fine = 5
+        builder["indentation"] = "";
+        return Json::writeString(builder, obj->ToJson());
+    }
 };
-MSGPACK_ADD_ENUM(PacketType)
+#else
+struct serializable_t {};
+#endif
 
-enum class Game {
-    Unknown = 0,
-    ETS2 = 1,
-    ATS = 2
-};
-MSGPACK_ADD_ENUM(Game)
-
-#endif //ETS2_JOB_LOGGER_PLUGINDEFS_H
+#endif //ETS2_JOB_LOGGER_SERIALIZABLE_H

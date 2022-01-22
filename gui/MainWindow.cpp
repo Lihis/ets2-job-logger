@@ -19,7 +19,7 @@
 
 #include "MainWindow.h"
 #include "AboutDialog.h"
-#include <msgpack.hpp>
+#include <jobplugin/Version.h>
 #include <wx/msgdlg.h>
 #include <wx/notifmsg.h>
 #ifdef _WIN32

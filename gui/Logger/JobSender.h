@@ -29,6 +29,8 @@
 
 #include "Logger/Settings.h"
 #include <jobplugin/PluginDefs.h>
+#include <jobplugin/Job.h>
+#include <jobplugin/Fine.h>
 #include <wx/event.h>
 #include <wx/thread.h>
 #ifdef _WIN32
