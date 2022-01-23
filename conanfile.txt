@@ -8,6 +8,7 @@ websocketpp/0.8.2
 libcurl/7.66.0
 jsoncpp/1.9.5
 wxwidgets/3.1.5@bincrafters/stable
+gtest/1.11.0
 
 [generators]
 cmake

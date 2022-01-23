@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2019 Tomi Lähteenmäki <lihis@lihis.net>                    *
+ * Copyright (c) 2022 Tomi Lähteenmäki <lihis@lihis.net>                    *
  *                                                                          *
  * This program is free software; you can redistribute it and/or modify     *
  * it under the terms of the GNU General Public License as published by     *
@@ -17,37 +17,45 @@
  * MA 02110-1301, USA.                                                      *
  ****************************************************************************/
 
-#ifndef ETS2_JOB_LOGGER_PLUGINDEFS_H
-#define ETS2_JOB_LOGGER_PLUGINDEFS_H
+#include <jobplugin/Job.h>
 
-/**
- * @file PluginDefs.h
- * @brief Shared header for plugin and application
- * @details Definition of data transported via WebSocket.
- * @author Tomi Lähteenmäki
- * @license This project is licensed under GNU General Public License, Version 2
- */
+Json::Value job_t::ToJson() const {
+    Json::Value root;
+    std::string game_name;
 
-#include <string>
-#include <msgpack.hpp>
+    switch (game) {
+        case Game::ETS2:
+            game_name = "ets2";
+            break;
+        case Game::ATS:
+            game_name = "ats";
+            break;
+        case Game::Unknown:
+            break;
+    }
 
-#define WEBSOCK_PORT 20210
+    root["game"] = game_name;
+    root["status"] = (uint8_t)status;
+    root["type"] = (uint8_t)type;
+    root["isSpecial"] = isSpecial;
+    root["income"] = Json::Value::UInt64(income);
+    root["revenue"] = Json::Value::Int64(revenue);
+    root["xp"] = Json::Value::Int(xp);
+    root["time"] = Json::Value::UInt(timeSpend);
+    root["maxSpeed"] = maxSpeed;
+    root["fuelConsumed"] = fuelConsumed;
+    root["autoPark"] = autoPark;
+    root["autoLoad"] = autoLoad;
+    root["distance"] = distance.ToJson();
+    root["cargo"] = cargo.ToJson();
+    root["trailer"] = trailer.ToJson();
+    root["truck"] = truck.ToJson();
+    root["source"] = source.ToJson();
+    root["destination"] = destination.ToJson();
 
-enum class PacketType {
-    Unknown = 0,
-    Version = 1,
-    Job = 2,
-    Truck = 3,
-    CargoDamage = 4,
-    Fine = 5
-};
-MSGPACK_ADD_ENUM(PacketType)
+    return root;
+}
 
-enum class Game {
-    Unknown = 0,
-    ETS2 = 1,
-    ATS = 2
-};
-MSGPACK_ADD_ENUM(Game)
-
-#endif //ETS2_JOB_LOGGER_PLUGINDEFS_H
+std::string job_t::ToString() const {
+    return serializable_t::ToString(this);
+}

@@ -9,35 +9,44 @@ jobs:
       - run: apt-get install -yq git build-essential pkg-config cmake
              libmsgpack-dev libboost-dev libboost-system-dev libwebsocketpp-dev
              zlib1g-dev libcurl4-openssl-dev libssl-dev libjsoncpp-dev
-             libwxgtk3.0-gtk3-dev
+             libwxgtk3.0-gtk3-dev libgtest-dev
       - checkout
       - run: git submodule update --init --recursive
       - run: cmake -B build
-      - run: make -j$(nproc) -C build
+      - run: cmake --build build
+      - run: ctest --test-dir build
+      - store_test_results:
+          path: build/tests/results
   archlinux:
     docker:
       - image: archlinux:latest
     steps:
       - run: pacman -Syu --noconfirm --noprogressbar --needed git openssh
              base-devel cmake msgpack-cxx boost websocketpp zlib curl openssl
-             jsoncpp wxgtk3 webkit2gtk
+             jsoncpp wxgtk3 webkit2gtk gtest
       # FIXME: this shouldn't be necessary
       - run: ln -s /usr/bin/wx-config-gtk3 /usr/bin/wx-config
       - checkout
       - run: git submodule update --init --recursive
       - run: cmake -B build
-      - run: make -j$(nproc) -C build
+      - run: cmake --build build
+      - run: ctest --test-dir build
+      - store_test_results:
+          path: build/tests/results
   fedora:
     docker:
       - image: fedora:latest
     steps:
       - run: dnf install -y git gcc-g++ pkgconfig cmake msgpack-devel
-             boost-devel websocketpp-devel zlib-devel openssl-devel
-             libcurl-devel jsoncpp-devel wxGTK3-devel
+             websocketpp-devel zlib-devel openssl-devel libcurl-devel
+             jsoncpp-devel wxGTK3-devel gtest-devel
       - checkout
       - run: git submodule update --init --recursive
       - run: cmake -B build
-      - run: make -j$(nproc) -C build
+      - run: cmake --build build
+      - run: ctest --test-dir build
+      - store_test_results:
+          path: build/tests/results
 
 workflows:
   version: 2

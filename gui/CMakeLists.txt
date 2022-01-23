@@ -52,14 +52,6 @@ find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
 find_package(OpenSSL REQUIRED)
-if(MSVC)
-    find_package(jsoncpp CONFIG REQUIRED)
-    set(JSONCPP_LIBRARIES jsoncpp_lib_static)
-    set(JSONCPP_INCLUDE_DIRS jsoncpp_lib_static)
-else()
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(JSONCPP jsoncpp REQUIRED)
-endif()
 
 if(NOT WIN32)
     if (PLUGIN_PATH)
@@ -84,6 +76,7 @@ if(MSVC OR MINGW)
 endif()
 
 add_executable(ets2-job-logger WIN32 ${SOURCES})
+add_dependencies(ets2-job-logger plugin)
 
 if(MINGW)
     set(WIN32_LIBS -lws2_32 -lcrypt32)
@@ -98,7 +91,7 @@ endif()
 
 target_link_libraries(ets2-job-logger
                       PRIVATE
-                      ets2joblogger::plugin
+                      ets2joblogger::serialization
                       ${wxWidgets_LIBRARIES}
                       ${PNG_LIBRARIES}
                       ${Boost_LIBRARIES}
@@ -106,7 +99,6 @@ target_link_libraries(ets2-job-logger
                       ${ZLIB_LIBRARIES}
                       ${OPENSSL_LIBRARIES}
                       ${CURL_LIBRARIES}
-                      ${JSONCPP_LIBRARIES}
                       )
 
 target_include_directories(ets2-job-logger
@@ -120,7 +112,6 @@ target_include_directories(ets2-job-logger
                            "${ZLIB_INCLUDE_DIRS}"
                            "${OPENSSL_INCLUDE_DIRS}"
                            "${CURL_INCLUDE_DIRS}"
-                           "${JSONCPP_INCLUDE_DIRS}"
                            )
 
 target_compile_options(ets2-job-logger

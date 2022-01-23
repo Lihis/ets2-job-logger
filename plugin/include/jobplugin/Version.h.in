@@ -17,6 +17,9 @@
  * MA 02110-1301, USA.                                                      *
  ****************************************************************************/
 
+#ifndef ETS2_JOB_LOGGER_PLUGIN_VERSION_H
+#define ETS2_JOB_LOGGER_PLUGIN_VERSION_H
+
 /**
  * @file Version.h
  * @brief Plugin version header file
@@ -24,11 +27,24 @@
  * @license This project is licensed under GNU General Public License, Version 2
  */
 
-#ifndef ETS2_JOB_LOGGER_PLUGIN_VERSION_H
-#define ETS2_JOB_LOGGER_PLUGIN_VERSION_H
+#include <msgpack.hpp>
 
 #define PLUGIN_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 #define PLUGIN_VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define PLUGIN_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+struct version_t {
+    explicit version_t(uint8_t major = 0, uint8_t minor = 0, uint8_t patch = 0) {
+        this->major = major;
+        this->minor = minor;
+        this->patch = patch;
+    }
+
+    uint8_t major;
+    uint8_t minor;
+    uint8_t patch;
+
+    MSGPACK_DEFINE(major, minor, patch);
+};
 
 #endif //ETS2_JOB_LOGGER_PLUGIN_VERSION_H

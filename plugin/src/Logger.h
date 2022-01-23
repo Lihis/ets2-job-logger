@@ -28,7 +28,8 @@
 #ifndef ETS2_JOB_LOGGER_PLUGIN_LOGGER_H
 #define ETS2_JOB_LOGGER_PLUGIN_LOGGER_H
 
-#include "jobplugin/PluginDefs.h"
+#include "jobplugin/Job.h"
+#include "jobplugin/Fine.h"
 #include <scs/scssdk_value.h>
 #include <scs/scssdk_telemetry_event.h>
 #include <thread>
