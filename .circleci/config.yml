@@ -24,11 +24,9 @@ jobs:
       - run: pacman -Syu --noconfirm --noprogressbar --needed git openssh
              base-devel cmake msgpack-cxx boost websocketpp zlib curl openssl
              jsoncpp wxgtk3 webkit2gtk gtest
-      # FIXME: this shouldn't be necessary
-      - run: ln -s /usr/bin/wx-config-gtk3 /usr/bin/wx-config
       - checkout
       - run: git submodule update --init --recursive
-      - run: cmake -B build
+      - run: cmake -B build -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config-gtk3
       - run: cmake --build build
       - run: ctest --test-dir build
       - store_test_results:
