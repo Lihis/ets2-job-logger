@@ -5,7 +5,9 @@ written in C++.
 
 | Linux | Windows | MacOS |
 | ----- | ------- | ----- |
-| [![Linux Build Status](https://circleci.com/gh/Lihis/ets2-job-logger.svg?style=shield)](https://circleci.com/gh/Lihis/ets2-job-logger/?branch=master) | [![Windows Build Status](https://ci.appveyor.com/api/projects/status/ev7ijqvsoclm84v4/branch/master?svg=true)](https://ci.appveyor.com/project/Lihis/ets2-job-logger/branch/master) | see [#16](https://github.com/Lihis/ets2-job-logger/issues/16) |
+| [![Linux Build Status](https://circleci.com/gh/Lihis/ets2-job-logger.svg?style=shield)](https://circleci.com/gh/Lihis/ets2-job-logger/?branch=master) | see [#63](https://github.com/Lihis/ets2-job-logger/issues/63) | see [#16](https://github.com/Lihis/ets2-job-logger/issues/16) |
+
+Currently only Linux build is supported. A maintainer for Windows and MacOS builds is needed.
 
 ## Functionality
 
