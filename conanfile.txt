@@ -12,3 +12,6 @@ gtest/1.11.0
 
 [generators]
 cmake
+
+[options]
+websocketpp:with_openssl=False
