@@ -7,7 +7,7 @@ written in C++.
 | ----- | ------- | ----- |
 | [![Linux Build Status](https://circleci.com/gh/Lihis/ets2-job-logger.svg?style=shield)](https://circleci.com/gh/Lihis/ets2-job-logger/?branch=master) | see [#63](https://github.com/Lihis/ets2-job-logger/issues/63) | see [#16](https://github.com/Lihis/ets2-job-logger/issues/16) |
 
-Currently only Linux build is supported. A maintainer for Windows and MacOS builds is needed.
+Currently only Linux is supported, maintainer(s) for Windows and MacOS are needed.
 
 ## Functionality
 

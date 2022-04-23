@@ -1,3 +1,4 @@
+# Disabled for push/PR events in the AppVeyor settings
 image:
   - Visual Studio 2017
 platform: x64
