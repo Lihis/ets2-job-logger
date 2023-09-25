@@ -26,6 +26,7 @@ jobs:
              jsoncpp wxwidgets-gtk3 gtest
       - checkout
       - run: git submodule update --init --recursive
+      - run: sed -i 's/msgpack REQUIRED/msgpackc-cxx REQUIRED/g' plugin/CMakeLists.txt
       - run: cmake -B build
       - run: cmake --build build
       - run: ctest --test-dir build
