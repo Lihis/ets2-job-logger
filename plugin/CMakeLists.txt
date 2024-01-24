@@ -8,7 +8,7 @@ else()
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(JSONCPP jsoncpp REQUIRED)
 endif()
-find_package(msgpack REQUIRED)
+find_package(msgpack NAMES msgpack msgpackc-cxx REQUIRED)
 find_package(websocketpp REQUIRED)
 
 set(HDRS
