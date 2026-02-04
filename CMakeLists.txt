@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.31)
 project(ets2-job-logger)
 
 set(CMAKE_CXX_STANDARD 11)
