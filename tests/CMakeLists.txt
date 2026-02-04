@@ -13,5 +13,5 @@ target_link_libraries(Json_test
                       )
 gtest_discover_tests(Json_test
                      XML_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/results
-                     TIMEOUT 60
+                     DISCOVERY_TIMEOUT 60
                      )
