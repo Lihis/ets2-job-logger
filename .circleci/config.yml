@@ -7,9 +7,9 @@ jobs:
     steps:
       - run: apt-get update -yq
       - run: apt-get install -yq git build-essential pkg-config cmake
-             libmsgpack-dev libboost-dev libboost-system-dev libwebsocketpp-dev
-             zlib1g-dev libcurl4-openssl-dev libssl-dev libjsoncpp-dev
-             libwxgtk3.2-dev libgtest-dev
+             libmsgpack-cxx-dev libboost-dev libboost-system-dev
+             libwebsocketpp-dev zlib1g-dev libcurl4-openssl-dev libssl-dev
+             libjsoncpp-dev libwxgtk3.2-dev libgtest-dev
       - checkout
       - run: git submodule update --init --recursive
       - run: cmake -B build
