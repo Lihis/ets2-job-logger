@@ -55,7 +55,7 @@ jobs:
       - run: dnf copr enable -y lihis/ets2-job-logger
       - run: dnf install -y git mingw64-gcc-c++ cmake mingw64-msgpack-cxx
              mingw64-websocketpp mingw64-zlib mingw64-curl mingw64-jsoncpp
-             mingw64-gtest wine-core
+             mingw64-gtest wine-common
       - run: WINEDEBUG=-all wine64 winecfg
       - checkout
       - run: git submodule update --init --recursive
