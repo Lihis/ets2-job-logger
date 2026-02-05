@@ -49,7 +49,7 @@ jobs:
     docker:
       - image: fedora:latest
     environment:
-      WINEPATH: /usr/x86_64-w64-mingw32/sys-root/mingw/bin
+      WINEPATH: "Z:\\usr\\x86_64-w64-mingw32\\sys-root\\mingw\\bin"
     steps:
       - run: dnf install -y 'dnf-command(copr)'
       - run: dnf copr enable -y lihis/ets2-job-logger
